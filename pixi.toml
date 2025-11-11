@@ -1,0 +1,11 @@
+[workspace]
+authors = ["Raymond Tay <raymondtay1974@gmail.com>"]
+channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
+name = "mojo-journey"
+platforms = ["osx-arm64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
+mojo = ">=0.25.7.0.dev2025111005,<0.26"
