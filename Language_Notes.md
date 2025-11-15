@@ -21,3 +21,26 @@ which is not implicitly copyable.
 Also see the Life of a value section of the Mojo Manual for more information
 about the different lifecycle methods and how to implement them.
 
+Kernel Functions
+=
+
+A typical kernel (executes in the GPU) function...
+
+```mojo
+fn print_threads():
+  """Print thread ids."""
+  print("Block_index: [",
+        block_idx.x,
+        block_idx.y,
+        block_idx.z,
+        "]\t Thread index: [",
+        thread_idx.x,
+        thread_idx.y,
+        thread_idx.z,
+        "]")
+```
+
+When using `fn` without the `raise` keyword because a kernel function is not
+allowed to raise an error condition. In contrast, when you define a Mojo
+function with `def`, the compiler always assumes that the function _can_ raise
+an error condition.
