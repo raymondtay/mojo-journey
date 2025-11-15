@@ -8,55 +8,71 @@
 # ------
 # 1) mojo build 01_helloworld.mojo
 #    ./01_helloworld
+import time
+
 from gridv1 import Grid
 from python import Python
 
-def main():
-  # var name : String = input("Enter your name: ")
-  # var greeting : String = name + ", Hi!"
-  # print(greeting)
+def run_display(
+    var grid: Grid,
+    window_height: Int = 600,
+    window_width: Int = 600,
+    background_colour : String = "black",
+    cell_colour: String = "green",
+    pause: Float64 = 0.1,
+    ) -> None:
+  # import the pygame python package
+  pygame = Python.import_module("pygame")
 
-  num_rows = 8
-  num_cols = 8
-  glider = [
-      [0, 1, 0, 0, 0, 0, 0, 0],
-      [0, 0, 1, 0, 0, 0, 0, 0],
-      [1, 1, 1, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-  ]
-  result = grid_str(num_rows, num_cols, glider)
-  result2 = Grid(num_rows, num_cols, glider^)
-  print(result)
-  # print(result2.grid_str())
-  print(String(result2))
+  # initialize pygame modules
+  pygame.init()
 
-  print(String(Grid.random(8, 16)))
-  grid = Grid.random(8, 16)
-  run_display(grid^)
-  run_pygame()
+  # create a window and sets its title
+  window = pygame.display.set_mode(Python.tuple(window_height, window_width))
+  pygame.display.set_caption("Conway's Game of life")
 
-fn grid_str(rows: Int, cols: Int, grid: List[List[Int]]) -> String:
-  str = String() # create empty String
+  cell_height = window_height / grid.rows
+  cell_width = window_width / grid.cols
+  border_size = 1
+  cell_fill_colour = pygame.Color(cell_colour)
+  background_fill_colour = pygame.Color(background_colour)
+  
+  running = True
 
-  for row in range(rows):
-    for col in range(cols):
-      if grid[row][col] == 1:
-        str += "*"
-      else:
-        str += " "
-    if row != rows - 1:
-      str += "\n"
-  return str
+  while running:
+    # Poll for events
+    event = pygame.event.poll()
+    if event.type == pygame.QUIT:
+      # Quit if the window is closed
+      running = False
+    elif event.type == pygame.KEYDOWN:
+      # Also quit if the user presses <Escape> or `q`
+      if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
+        running = False
 
-def run_display(var grid: Grid) -> None:
-  while True:
-    print(String(grid))
-    print()
-    if input("Enter 'q' to quit or press <Enter> to continue: ") == "q":
-      break
+    # Clear the window by painting with the background colour
+    window.fill(background_fill_colour)
+
+    for row in range(grid.rows):
+      for col in range(grid.cols):
+        if grid[row, col]:
+          x = col * cell_width + border_size
+          y = row * cell_height + border_size
+          width = cell_width - border_size
+          height = cell_height - border_size
+          pygame.draw.rect(window, cell_fill_colour, Python.tuple(x, y, width, height))
+    # Update the display, 
+    pygame.display.flip()
+    # Pause to let me appreciate the scene
+    time.sleep(pause)
     grid = grid.evolve()
+
+  # Shutdown pygame cleanly
+  pygame.quit()
+
+
+
+def main():
+  start = Grid.random(128, 128)
+  run_display(start^)
 
