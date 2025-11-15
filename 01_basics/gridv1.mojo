@@ -1,6 +1,7 @@
 # Mojo requires you to declare all fields in the struct definition. You cannot
 # add fields dynamically at run-time. You must declare the type for each field,
 # but you cannot assign a value as part of the field declaration.
+import random
 
 @fieldwise_init
 struct Grid(Stringable, Copyable, Movable):
@@ -31,4 +32,22 @@ struct Grid(Stringable, Copyable, Movable):
   # Setters alter "state" and don't return any values.
   fn __setitem__(mut self, row: Int, col: Int, value: Int) -> None:
     self.data[row][col] = value;
+
+  # Static methods do not operate on specific instances of the type, 
+  # so it can be invoked as a utility function. We can decorate in
+  # using the @staticmethod decorator.
+  @staticmethod
+  fn random(rows: Int, cols: Int) -> Self:
+    # seed the random number generator using the current time.
+    random.seed()
+
+    var data: List[List[Int]] = []
+    for _ in range(rows):
+      var row_data : List[Int] = []
+      for _ in range(cols):
+        row_data.append(Int(random.random_si64(0, 1)))
+      data.append(row_data^) # transfer ownership from `row_data` to `data`
+
+    return Self(rows, cols, data^)
+
 

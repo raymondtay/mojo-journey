@@ -11,9 +11,9 @@
 from gridv1 import Grid
 
 def main():
-  var name : String = input("Enter your name: ")
-  var greeting : String = name + ", Hi!"
-  print(greeting)
+  # var name : String = input("Enter your name: ")
+  # var greeting : String = name + ", Hi!"
+  # print(greeting)
 
   num_rows = 8
   num_cols = 8
@@ -32,6 +32,8 @@ def main():
   print(result)
   # print(result2.grid_str())
   print(String(result2))
+
+  print(String(Grid.random(8, 16)))
 
 fn grid_str(rows: Int, cols: Int, grid: List[List[Int]]) -> String:
   str = String() # create empty String
