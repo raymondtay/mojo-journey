@@ -9,3 +9,5 @@ version = "0.1.0"
 
 [dependencies]
 mojo = ">=0.26.1.0.dev2025111405,<0.27"
+python = ">=3.11,<3.13"
+pygame = ">=2.6.1,<3"

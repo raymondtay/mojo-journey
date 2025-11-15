@@ -9,6 +9,7 @@
 # 1) mojo build 01_helloworld.mojo
 #    ./01_helloworld
 from gridv1 import Grid
+from python import Python
 
 def main():
   # var name : String = input("Enter your name: ")
@@ -34,6 +35,9 @@ def main():
   print(String(result2))
 
   print(String(Grid.random(8, 16)))
+  grid = Grid.random(8, 16)
+  run_display(grid^)
+  run_pygame()
 
 fn grid_str(rows: Int, cols: Int, grid: List[List[Int]]) -> String:
   str = String() # create empty String
@@ -48,5 +52,11 @@ fn grid_str(rows: Int, cols: Int, grid: List[List[Int]]) -> String:
       str += "\n"
   return str
 
-
+def run_display(var grid: Grid) -> None:
+  while True:
+    print(String(grid))
+    print()
+    if input("Enter 'q' to quit or press <Enter> to continue: ") == "q":
+      break
+    grid = grid.evolve()
 
