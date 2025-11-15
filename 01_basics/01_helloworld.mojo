@@ -30,8 +30,8 @@ def main():
   result = grid_str(num_rows, num_cols, glider)
   result2 = Grid(num_rows, num_cols, glider^)
   print(result)
-  print(result2.grid_str())
-
+  # print(result2.grid_str())
+  print(String(result2))
 
 fn grid_str(rows: Int, cols: Int, grid: List[List[Int]]) -> String:
   str = String() # create empty String

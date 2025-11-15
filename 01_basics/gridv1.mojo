@@ -3,7 +3,7 @@
 # but you cannot assign a value as part of the field declaration.
 
 @fieldwise_init
-struct Grid(Copyable, Movable):
+struct Grid(Stringable, Copyable, Movable):
   # Indicate that Grid conforms to the Movable and Copyable traits without
   # implementing the corresponding lifecycle methods. In that case, the Mojo
   # compiler automatically generates the missing methods for you.
@@ -11,7 +11,7 @@ struct Grid(Copyable, Movable):
   var cols: Int
   var data: List[List[Int]]
 
-  fn grid_str(self) -> String:
+  fn __str__(self) -> String:
     str = String()
   
     for row in range(self.rows):
