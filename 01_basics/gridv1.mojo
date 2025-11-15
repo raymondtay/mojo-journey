@@ -16,7 +16,7 @@ struct Grid(Stringable, Copyable, Movable):
   
     for row in range(self.rows):
       for col in range(self.cols):
-        if self.data[row][col] == 1:
+        if self[row, col] == 1:
           str += "*"
         else:
           str += " "
@@ -24,4 +24,11 @@ struct Grid(Stringable, Copyable, Movable):
         str += "\n"
     return str
 
+  # Getters retrieve "state"
+  fn __getitem__(self, row: Int, col: Int) -> Int:
+    return self.data[row][col];
+
+  # Setters alter "state" and don't return any values.
+  fn __setitem__(mut self, row: Int, col: Int, value: Int) -> None:
+    self.data[row][col] = value;
 
