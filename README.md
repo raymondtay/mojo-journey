@@ -1,9 +1,9 @@
 Documenting my journey to learning Mojo
 ==
 
-
 Updating Pixi
 ==
+
 The following is how you would update `pixi`, typically:
 
 ```
@@ -16,3 +16,8 @@ Environment: default
   ~ C mojo-python      0.25.7.0.dev2025111005 release  ->  0.25.7.0.dev2025111305 release
   ~ C tk               8.6.13 h892fb3f_2               ->  8.6.13 h892fb3f_3
 ```
+
+Running in Google Colab
+==
+
+Coming soon ...
