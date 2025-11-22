@@ -34,6 +34,14 @@ from layout import IntTuple, Layout, print_layout
 #  Outer Mode (2:4): Repeat this group 2 times, stepping 4 indices to find the start of the next group.
 #  Visually, this covers the same indices as a flat (8:1) vector (0-7), but the
 #  layout captures the structure that it is "two groups of four".
+#
+# ==============
+# | IMPORTANT |
+# ==============
+# In nested modes, there is NO notion of row and column. The key insight here is
+# to understand that the first mode as the "inner mode" (defining a group) and
+# the next mode as an "outer mode" (defining a repeat of the group).
+#
 
 fn row_and_column_major():
     print("row major and column major")
@@ -71,9 +79,16 @@ fn nested_modes():
     print_layout(layout_c)
     print()
 
+fn tiled_layout():
+  var tiled_layout = Layout(
+    IntTuple(IntTuple(3, 2), IntTuple(2, 5)), # shape
+    IntTuple(IntTuple(1, 6), IntTuple(3, 12)) # strides
+  )
+  print_layout(tiled_layout)
 
 def main():
-  row_and_column_major()
-  coords_to_index()
-  nested_modes()
+  # row_and_column_major()
+  # coords_to_index()
+  # nested_modes()
+  tiled_layout()
 
