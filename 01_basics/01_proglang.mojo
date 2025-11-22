@@ -1,3 +1,4 @@
+from python import Python
 
 # This basically says that whatever implements `AddOne` would add the value of
 # `1` to whatever the structure.
@@ -42,5 +43,7 @@ def main():
   print("After adding four (ie 4): ")
   add_four(pair)
   pair.dump()
-
   repeat[3]("Hello!")
+
+  var np = Python.import_module("numpy")
+  var arr = np.arange(15).reshape(3,5)
