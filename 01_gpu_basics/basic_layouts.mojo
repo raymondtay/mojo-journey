@@ -1,4 +1,3 @@
-
 from layout import IntTuple, Layout, print_layout
 
 # What is a Mode?
@@ -10,14 +9,14 @@ from layout import IntTuple, Layout, print_layout
 #
 # What are Nested Modes?
 #
-# Nested modes (or hierarchical modes) allow you to break down a single logical dimension 
+# Nested modes (or hierarchical modes) allow you to break down a single logical dimension
 # into multiple sub-levels of organization. This is primarily used to represent complex
 # memory patterns like tiling or blocking, where data is grouped into chunks rather
 # than being purely linear.
-# 
+#
 # In a nested mode, a single dimension's shape and stride are defined by IntTuples
 # (tuples of integers) rather than single integers.
-# 
+#
 # Structure: Inner vs. Outer
 #
 # A nested mode generally follows the structure (inner, outer).
@@ -42,6 +41,7 @@ from layout import IntTuple, Layout, print_layout
 # to understand that the first mode as the "inner mode" (defining a group) and
 # the next mode as an "outer mode" (defining a repeat of the group).
 #
+
 
 fn row_and_column_major():
     print("row major and column major")
@@ -75,20 +75,21 @@ fn nested_modes():
         [[1, 4], [2, 8]],
     )
     print_layout(layout_b)
-    var layout_c = Layout(IntTuple(4,2), IntTuple(1,4))
+    var layout_c = Layout(IntTuple(4, 2), IntTuple(1, 4))
     print_layout(layout_c)
     print()
 
+
 fn tiled_layout():
-  var tiled_layout = Layout(
-    IntTuple(IntTuple(3, 2), IntTuple(2, 5)), # shape
-    IntTuple(IntTuple(1, 6), IntTuple(3, 12)) # strides
-  )
-  print_layout(tiled_layout)
+    var tiled_layout = Layout(
+        IntTuple(IntTuple(3, 2), IntTuple(2, 5)),  # shape
+        IntTuple(IntTuple(1, 6), IntTuple(3, 12)),  # strides
+    )
+    print_layout(tiled_layout)
+
 
 def main():
-  # row_and_column_major()
-  # coords_to_index()
-  # nested_modes()
-  tiled_layout()
-
+    # row_and_column_major()
+    # coords_to_index()
+    # nested_modes()
+    tiled_layout()
