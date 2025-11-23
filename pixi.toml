@@ -1,6 +1,10 @@
 [workspace]
 authors = ["Raymond Tay <raymondtay1974@gmail.com>"]
-channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
+channels = [
+  "https://conda.modular.com/max",
+  "conda-forge",
+  "https://repo.prefix.dev/modular-community",
+]
 name = "mojo-journey"
 platforms = ["osx-arm64"]
 version = "0.1.0"
@@ -8,7 +12,8 @@ version = "0.1.0"
 [tasks]
 
 [dependencies]
-mojo = ">=0.26.1.0.dev2025111405,<0.27"
+mojo = ">=0.25,<0.27"
 python = ">=3.11,<3.13"
 pygame = ">=2.6.1,<3"
 numpy = ">=2.3.5,<3"
+emberjson = ">=0.2.1,<0.3"

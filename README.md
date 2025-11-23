@@ -1,6 +1,23 @@
 Documenting my journey to learning Mojo
 ==
 
+**Note:** The examples here are working for Mojo's _stable_, as the examples
+would use the community libraries/implementations. Also, these libraries are
+built according to the _stable_ Mojo compiler.
+
+Below is an example of the configuration `pixi.toml`
+```pre
+[workspace]
+channels = [
+  "https://conda.modular.com/max",
+  "conda-forge",
+  "https://repo.prefix.dev/modular-community",
+]
+
+[dependencies]
+mojo = ">=0.25,<0.27"
+```
+
 Updating Pixi
 ==
 
@@ -21,3 +38,14 @@ Running in Google Colab
 ==
 
 Coming soon ...
+
+Clean up the Pixi Environment
+==
+
+To clean up your _local_ environment (e.g., workstation), you can perform the
+following:
+
+```bash
+rm -fR .pixi # Removes everything 
+pixi install # Installs everything in the `pixi.toml`
+```
