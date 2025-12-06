@@ -3,6 +3,16 @@ import compile
 from emberjson import parse, to_string
 from utils.numerics import max_finite, min_finite
 
+struct Source:
+  var name: String
+  fn __init__(out self, n: String):
+    self.name = n
+
+struct Target:
+  var name: String
+  @implicit
+  fn __init__(out self, s: Source):
+    self.name = s.name
 
 fn r[
     size: Int
@@ -46,3 +56,7 @@ def main():
 
     print("\n--- Optimized LLVM IR ---")
     print(compile.compile_info[r[4], emission_kind="llvm-opt"]())
+
+    var a = Source("source")
+    var b: Target = a
+    print("b is implicitly converted to `Target`, with name: ",b.name)
