@@ -1,7 +1,7 @@
 [workspace]
 authors = ["Raymond Tay <raymondtay1974@gmail.com>"]
 channels = [
-  "https://conda.modular.com/max",
+  "https://conda.modular.com/max-nightly",
   "conda-forge",
   "https://repo.prefix.dev/modular-community",
 ]
@@ -12,8 +12,6 @@ version = "0.1.0"
 [tasks]
 
 [dependencies]
-mojo = ">=0.25,<0.27"
-python = ">=3.11,<3.13"
-pygame = ">=2.6.1,<3"
+mojo = ">=0.26.1.0.dev2025120605,<0.27"
 numpy = ">=2.3.5,<3"
 emberjson = ">=0.2.1,<0.3"
