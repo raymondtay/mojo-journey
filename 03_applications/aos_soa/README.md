@@ -134,8 +134,8 @@ the code looks sequential at a high-level (i.e., programming language level).
 
 To understand, here's how CPU prefetchers work...
 
-1. What CPU prefetchers are really good at
-
+1. What CPU prefetchers are really good at?
+-----
 CPUs, in general, don't understand `struct` in the way C programmers do; CPU
 detect patterns in physical memory addresses. Typical hardware prefetchers look
 for:
@@ -163,7 +163,7 @@ CPU prefetchers do not track:
 * Multiple interleaved strides well
 
 2. AOS creates Multiple Interleaved strides
-
+-----
 Consider the classic AoS:
 
 ```c
@@ -203,7 +203,7 @@ The kicker here is that if sizeof(Particle) == 28 or 32 bytes, the stride is not
 cache_line aligned.
 
 3. Why the Prefetcher struggles
-
+-----
 Prefetchers work best when
 
 ```pre
@@ -224,6 +224,7 @@ cache_line
 * Prefetcher often under-fetches or mispredicts (waste of memory bandwidth and cpu cycles)
 
 3.2 False sharing of unrelated fields
+----
 
 When you load `x`:
 
@@ -257,6 +258,7 @@ __Caution__: Most CPUs can track only __~ 4 - 8__ streams effectively. You can
 quickly see that AoS __will out run__ that quickly.
 
 4. AoS breaks vectorization
+-----
 Another common expression is that prefetch loses signals. Easiest way to
 understand this is understand memory patterns.
 In SoA:
@@ -286,4 +288,80 @@ Becomes:
 Remember: Prefetchers are __load-instruction driven__. No opportunity for
 vectorization implies that the prefetcher performs poorly.
 
-5. TLB presssure: AoS amplifies it.
+5. TLB presssure:AoS amplifies it.
+-----
+
+AoS structures are larger, in other words, the memory footprint is stronger.
+That means: 
+* Fewer elements per page
+* More page crossings
+* More TLB misses
+
+Prefetchers typically do not cross page boundaries aggressively (for safety),
+which results in two (2) outcomes:
+* Prefetch stops at the page boundary
+* Pipeline stalls, waiting for TLB _refill_
+
+SoA, on the other hand, keeps code packed tighter.
+```C
+x[] packed tightly
+```
+Hence, there are _less_ or fewer TLB events. Unexpectedly, there is another
+kicker to the entire story, this scenario happens when we have pointer-rich
+environments.
+
+6. Pointer rich AoS is even worse
+-----
+Examine the following code snippet:
+```C
+struct Node {
+  float value;
+  Node* next;
+};
+```
+So, what's going on? Well, the assignment of the value of the `next` pointer is
+practically random which means when we attempt to run-down the list of nodes, we
+have the following access pattern:
+```pre
+addr ⇒ random ⇒ random ⇒ random ...
+```
+This defeats all hardware prefetches, destroys predictability. Why? Because we
+got (a) no stride, (b) no correlation, (c) No repetition ⇒ reduced opportunities
+for spatial and temporal locality.
+
+7. Why SoA fixes all of this?
+
+Examine the following code snippet:
+```C
+struct Particles {
+    float x[N], y[N], z[N];
+    float vx[N], vy[N], vz[N];
+};
+```
+At this stage, we have the following advantages as follows:
+* one stream per array
+* Unit stride
+* Perfect cache-line utilization
+* Easy SIMD
+* TLB-friendly
+* Prefetcher hits ~ 100% accuracy, or really close to it.
+Hence, this is why high-performance computing, gpus and vector CPUs universally
+prefer SoA.
+
+8. Can we compare apples to apples?
+-----
+
+AoS vs SoA on CPU prefetch ~= AoS vs SoA on GPU prefetch
+
+So, the main notes around the above claim is to understand the following:
+* Prefetcher likes one (1) predictable address stream (unit or constant stride)
+* AoS often creates multiple interleaved streams &  wasted cacheline bytes
+
+CUDA (coalescing)
+* A _warp_ (32 threads, executing in unison) is happiest when threads access
+contiguous addresses so that the hardware can serve them with few memory
+transactions.
+* AoS often makes each thread read one field out of a bigger struct ⇒ the warp's
+  addresses are __strided by sizeof(struct)__ strategy, so the hardware often
+needs more transactions, and you pull in lots of unused bytes.
+
