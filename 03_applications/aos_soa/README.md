@@ -37,18 +37,13 @@ Memory Layout (AoS)
 Characteristics
 ---
 
-|-- | -- |
 
 | Aspect | Effect |
 | -- | -- |
 | Cache behavior | Good per particle locality; bad for compose-wise scans |
-| -- | -- |
 | SIMD vectorization | Hard (computer struggles due to strided loads) |
-| -- | -- |
 | GPU Coalescing | Poor - threads read interleaved data |
-| -- | -- |
 | Writes | Good when updating the whole particle |
-| -- | -- |
 
 2. Structure of Arrays (SoA)
 --
@@ -78,18 +73,12 @@ xxx....yyy...zzz....massmassmass....
 Characteristics
 ---
 
-|-- | -- |
-
 | Aspect | Effect |
 | -- | -- |
 | Cache behavior | Excellent for column-wise (per-component) access|
-| -- | -- |
 | SIMD vectorization | Easy - contiguous arrays == full vector loads |
-| -- | -- |
 | GPU Coalescing | Excellent - threads load adjacent values |
-| -- | -- |
 | Writes | Potentially worse if updating all components of 1 particle|
-| -- | -- |
 
 3. Famous Example: Force accumulation of particles
 --
