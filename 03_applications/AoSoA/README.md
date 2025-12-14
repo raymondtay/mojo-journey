@@ -4,7 +4,7 @@ Hybrid Layout (AoSoA / Tiled SoA)
 Modern HPC uses the `Array-of-Structures-of-Arrays (AoSoA)` aka "Tiled SoA"
 approach, the structure looks like:
 
-[!AoSoA](./images/AoSoA.png)
+![AoSoA](./images/AoSoA.png)
 
 ```pre
 Tile[0]:
