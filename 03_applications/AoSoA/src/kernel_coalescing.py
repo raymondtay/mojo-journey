@@ -61,6 +61,42 @@ def computation_via_soa():
     return t_soa
 
 
+def benchmark_aos_vs_soa(n=100_000_000, factor=1.1):
+    particles_aos = np.zeros((n, 4), dtype=np.float32)
+    particles_aos[:, 0] = np.linspace(0, 1, n)
+    particles_aos[:, 1:] = 1.0
+
+    x = particles_aos[:, 0].copy()
+
+    d_aos = cuda.to_device(particles_aos)
+    d_x = cuda.to_device(x)
+
+    threads_per_block = 256
+    blocks = (n + threads_per_block - 1) // threads_per_block
+
+    # Warm-up
+    scale_x_aos[blocks, threads_per_block](d_aos, factor)
+    scale_x_soa[blocks, threads_per_block](d_x, factor)
+    cuda.synchronize()
+
+    # Time AoS
+    start = time.perf_counter()
+    scale_x_aos[blocks, threads_per_block](d_aos, factor)
+    cuda.synchronize()
+    t_aos = time.perf_counter() - start
+
+    # Time SoA
+    start = time.perf_counter()
+    scale_x_soa[blocks, threads_per_block](d_x, factor)
+    cuda.synchronize()
+    t_soa = time.perf_counter() - start
+
+    print(f"AoS: {t_aos * 1e3:.3f} ms")
+    print(f"SoA: {t_soa * 1e3:.3f} ms")
+    print(f"Speedup (AoS / SoA): {t_aos / t_soa:.2f}x")
+
+
 if __name__ == "__main__":
     (t_aos, t_soa) = (computation_via_aos(), computation_via_soa())
     print("Speedup (AoS / SoA): ", t_aos / t_soa)
+    benchmark_aos_vs_soa()
