@@ -161,3 +161,100 @@ if __name__ == "__main__":
     print("Speedup (AoS / SoA): ", t_aos / t_soa)
 
 ```
+
+Let's take a step back from the code and you saw and read (probably);
+re-focusing on the conceptual aspects of the algorithm and this is where the
+visualization can play a significant role.
+
+1.3 Representational View of AoS SoA structures
+--
+
+I do believe in developing the correct visual mental model, as its remarkably
+useful when it comes to developing and debugging your kernels. In the AoS model,
+it reflects the mental of the _computer programmer_ (i should really use the
+terms of software developer or software engineer).
+
+AoS layout
+
+```
+// C:
+struct Particle {
+    float x, y, z, mass;
+};
+
+Particle particles[N];
+
+Memory:
+
+address →
++----------------+----------------+----------------+----------------+---
+| x0 | y0 | z0 | m0 | x1 | y1 | z1 | m1 | x2 | y2 | z2 | m2 | ...
++----------------+----------------+----------------+----------------+---
+```
+
+In the SoA scenario, the structure looks a little funny as its not a mental
+model we are accustomed. It does not reflect the way the programmers from the
+1990s, though it would be really familiar to people whom are familiar with
+array-based programming languages.
+
+SoA layout
+
+```
+struct Particles {
+    float x[N];
+    float y[N];
+    float z[N];
+    float mass[N];
+};
+
+Memory:
+
+address →
+x: [ x0 | x1 | x2 | x3 | ... | xN-1 ]
+y: [ y0 | y1 | y2 | y3 | ... | yN-1 ]
+z: [ z0 | z1 | z2 | z3 | ... | zN-1 ]
+m: [ m0 | m1 | m2 | m3 | ... | mN-1 ]
+```
+
+1.4 Warp / SIMD diagram (for coalescing)
+--
+
+This subsection is to help readers understand how memory coalescing woks in the
+super-computing age. For simplicity sake, let's assume the a warp of 8 threads
+are used:
+
+```pre
+Warp (8 threads) reading x:
+
+Thread IDs:  0    1    2    3    4    5    6    7
+
+AoS (stride = sizeof(Particle)):
+    addr:   x0   x1   x2   x3   x4   x5   x6   x7
+    layout: [x0 y0 z0 m0][x1 y1 z1 m1]...
+
+    → 8 scattered 16-byte apart segments
+
+SoA:
+    addr:   x0 x1 x2 x3 x4 x5 x6 x7 (contiguous)
+
+    → 1 coalesced segment (ideally)
+```
+
+In the other perspective, the mental picture which i find to be quite intuitive
+would be to imagine the kitchen split into tiles and each tile is exactly the
+same as the other. Here's what AoSoA/Tiled SoA looks like
+
+```pre
+Vector length VL = 4
+
+Tile 0:
+    x[0..3], y[0..3], z[0..3], m[0..3]
+
+Tile 1:
+    x[4..7], y[4..7], z[4..7], m[4..7]
+
+Memory (conceptually):
+
+[x0 x1 x2 x3][y0 y1 y2 y3][z0 z1 z2 z3][m0 m1 m2 m3]
+[x4 x5 x6 x7][y4 y5 y6 y7][z4 z5 z6 z7][m4 m5 m6 m7] ...
+```
