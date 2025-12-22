@@ -39,6 +39,67 @@ stride-1 patterns. These allow vector load/stores like:
 vmovaps zmm0, [x + i*64] ; loads 16 floats at once
 ```
 
+Deep dive into the Mojo code
+--
+
+The classical example to use would be the following:
+
+```pre
+y[i] = a * x[i] + y[i]
+```
+
+using `SIMD[Float32, 16]` which translate to the 16-lanes where each lane is
+32-bits _wide_. If the architecture supports those instructions mentioned
+earlier, then we should see instructions like `zmm` and `vmfadd` in the assembly
+code. Checkout the code, in Mojo:
+
+```mojo
+# Use Mojo compiler version 0.26
+from memory import UnsafePointer
+from sys import align_of
+from builtin.simd import SIMD
+from compile import compile_info
+
+fn saxpy16(
+    y: UnsafePointer[mut=True, Scalar[DType.float32]],
+    x: UnsafePointer[mut=True, Scalar[DType.float32]],
+    n: Int,
+    a: Float32,
+):
+    comptime W = 16
+    va = SIMD[DType.float32, W](a)
+
+    # Alignment for vector load/store (safe choice for 16x f32)
+    comptime ALIGN = align_of[SIMD[DType.float32, W]]()
+
+    var i: Int = 0
+    while i + W <= n:
+      vx = (x + i).load[width=W, alignment=ALIGN]()
+      vy = (y + i).load[width=W, alignment=ALIGN]()
+      (y + i).store[width=W, alignment=ALIGN](va * vx + vy)
+      i += W
+
+    # Scalar tail
+    while i < n:
+      xi = (x + i).load[width=1]()
+      yi = (y + i).load[width=1]()
+      (y + i).store[width=1](a * xi + yi)
+      i += 1
+
+fn main():
+    info = compile_info[saxpy16]()
+    print(info)
+```
+
+The next thing to accomplish is to have Mojo lower ordinary loops into AMX files
+
+* for this to happen, you will typically need __tile intrinsics__ (or a library)
+  to get AMX, and then you will definitely see assembly instructions like `tileload`,
+`ldtilecfg`, `tileloadd*`, `tdp*`, `tilestored` and `tilerelease`, in the
+generated assembly.
+  * Note: this does not necessarily mean that its runnable (or executable) as
+  the CPU architecture chipset must match or at least be compatible.
+
 Avoiding AoS means Mojo can lower your loop into AVX-512 or AMX tiles w/o
 re-writing the algorithm. Here's an example (see [source code](./src/00_loop_lowering.mojo)), when it happens:
 
@@ -97,4 +158,53 @@ and it can be passed along to _pixi_ to execute.
 
 ```mojo
 !pixi run --manifest-path mojo_project/ mojo build --emit=asm mojo_project/loop_lowering.mojo
+```
+
+A minimal C++ AMX "smoke test"
+--
+
+Here's a contrived example, that performs the following:
+
+* Loads a tile config
+* Performs a dot-product "tile" operation
+* Releases tiles
+
+```c++
+#include <immintrin.h>
+#include <stdint.h>
+
+extern "C" void amx_smoke(
+  const uint8_t* A,
+  const int8_t* B, 
+  int32_t* C, 
+  int lda, int ldb, int ldc) {
+
+  // 64-bbyte aligned tile config (Intel AMX requirement)
+  alignas(64) struct {
+  uint8_t palette_id;
+  uint8_t start_row;
+  uint8_t reserved[15];
+  uint8_t colsb[8];
+  uint8_t rows[8];
+  } cfg = {};
+
+  cfg.palette_id = 1;
+  cfg.colsb[0] = 64; cfg.rows[0] = 16; // tmm0
+  cfg.colsb[1] = 64; cfg.rows[1] = 16; // tmm1
+  cfg.colsb[2] = 64; cfg.rows[2] = 16; // tmm2
+
+  _tile_loadconfig(&cfg);
+
+  // Load tiles (interpret strides in bytes)
+  _tile_loadd(0, A, lda);
+  _tile_loadd(1, B, ldb);
+
+  // dot-product accumulate (int8 -> int32)
+  // tdpbssd: signed*signed dword accumulate
+  _tile_dpbssd(2, 0, 1);
+
+  _tile_stored(2, C, ldc);
+
+  _tile_release();
+}
 ```
