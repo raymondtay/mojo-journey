@@ -1,0 +1,133 @@
+# Makefile for Gaussian Blur Comparison
+# Builds both Python and C++/CUDA standalone applications
+
+NVCC = nvcc
+PYTHON = python3
+
+# CUDA architecture
+CUDA_ARCH = sm_75
+
+# Compiler flags
+NVCC_FLAGS = -arch=$(CUDA_ARCH) -O3 --use_fast_math -Xcompiler -Wall -std=c++11
+
+# Targets
+CUDA_TARGET = gaussian_blur_comparison_cuda
+PYTHON_SCRIPT = gaussian_blur_comparison.py
+
+.PHONY: all cuda python run_cuda run_python run compare clean help
+
+all: cuda
+
+# Build CUDA version
+cuda: $(CUDA_TARGET)
+
+$(CUDA_TARGET): gaussian_blur_comparison_cuda.cu
+	$(NVCC) $(NVCC_FLAGS) $< -o $@
+	@echo "Built CUDA comparison application: $@"
+
+# Python doesn't need compilation, but we can check dependencies
+python:
+	@echo "Checking Python dependencies..."
+	@$(PYTHON) -c "import numpy; import scipy; print('✓ NumPy and SciPy are installed')" || \
+		(echo "✗ Missing dependencies. Install with: pip install numpy scipy" && exit 1)
+	@echo "Python script is ready: $(PYTHON_SCRIPT)"
+
+# Run CUDA version with default parameters
+run_cuda: $(CUDA_TARGET)
+	@echo ""
+	@echo "========================================"
+	@echo "Running CUDA Comparison"
+	@echo "========================================"
+	@./$(CUDA_TARGET)
+
+# Run Python version with default parameters
+run_python: python
+	@echo ""
+	@echo "========================================"
+	@echo "Running Python Comparison"
+	@echo "========================================"
+	@$(PYTHON) $(PYTHON_SCRIPT)
+
+# Run both and compare
+run: run_cuda run_python
+
+# Compare with custom parameters
+compare: $(CUDA_TARGET) python
+	@echo ""
+	@echo "========================================"
+	@echo "Comparison: CUDA vs Python"
+	@echo "========================================"
+	@echo ""
+	@echo "--- CUDA Version ---"
+	@./$(CUDA_TARGET) --width 500 --height 500 --kernel-size 11 --pattern gradient
+	@echo ""
+	@echo "--- Python Version ---"
+	@$(PYTHON) $(PYTHON_SCRIPT) --width 500 --height 500 --kernel-size 11 --pattern gradient
+
+# Example runs with different configurations
+test_small: $(CUDA_TARGET) python
+	@echo "Testing with small image (256x256)..."
+	./$(CUDA_TARGET) --width 256 --height 256 --kernel-size 7
+
+test_large: $(CUDA_TARGET) python
+	@echo "Testing with large image (2048x2048)..."
+	./$(CUDA_TARGET) --width 2048 --height 2048 --kernel-size 11
+
+test_patterns: $(CUDA_TARGET)
+	@echo "Testing different patterns..."
+	@echo "\n=== Random ==="
+	@./$(CUDA_TARGET) --width 500 --height 500 --pattern random --iterations 5
+	@echo "\n=== Gradient ==="
+	@./$(CUDA_TARGET) --width 500 --height 500 --pattern gradient --iterations 5
+	@echo "\n=== Checkerboard ==="
+	@./$(CUDA_TARGET) --width 500 --height 500 --pattern checkerboard --iterations 5
+
+# Benchmark different kernel sizes
+benchmark: $(CUDA_TARGET)
+	@echo "Benchmarking different kernel sizes..."
+	@for size in 3 5 7 9 11 15 21; do \
+		echo "\n=== Kernel size: $$size ==="; \
+		./$(CUDA_TARGET) --kernel-size $$size --iterations 20; \
+	done
+
+# Clean build artifacts
+clean:
+	rm -f $(CUDA_TARGET) *.o
+	rm -f *.npy  # Clean up any saved numpy arrays
+	@echo "Cleaned build artifacts"
+
+# Help
+help:
+	@echo "Gaussian Blur Comparison Makefile"
+	@echo ""
+	@echo "Targets:"
+	@echo "  all              - Build CUDA application (default)"
+	@echo "  cuda             - Build CUDA application"
+	@echo "  python           - Check Python dependencies"
+	@echo "  run_cuda         - Build and run CUDA version"
+	@echo "  run_python       - Run Python version"
+	@echo "  run              - Run both versions"
+	@echo "  compare          - Run both with same parameters"
+	@echo "  test_small       - Test with small image (256x256)"
+	@echo "  test_large       - Test with large image (2048x2048)"
+	@echo "  test_patterns    - Test all image patterns"
+	@echo "  benchmark        - Benchmark different kernel sizes"
+	@echo "  clean            - Remove build artifacts"
+	@echo "  help             - Show this help"
+	@echo ""
+	@echo "Command-line arguments (for manual runs):"
+	@echo "  --width N          Image width (default: 1000)"
+	@echo "  --height N         Image height (default: 1000)"
+	@echo "  --sigma N          Gaussian sigma (default: 2.0)"
+	@echo "  --kernel-size N    Kernel size (default: 11)"
+	@echo "  --pattern TYPE     Pattern: random, gradient, checkerboard (default: random)"
+	@echo "  --iterations N     Benchmark iterations (default: 10)"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make                                    # Build CUDA version"
+	@echo "  make run_cuda                           # Run CUDA version"
+	@echo "  make run_python                         # Run Python version"
+	@echo "  make compare                            # Compare both"
+	@echo "  make benchmark                          # Benchmark kernel sizes"
+	@echo "  ./$(CUDA_TARGET) --width 1920 --height 1080 --kernel-size 15"
+	@echo "  $(PYTHON) $(PYTHON_SCRIPT) --width 1920 --height 1080 --kernel-size 15"
