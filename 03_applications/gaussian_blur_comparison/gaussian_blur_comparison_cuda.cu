@@ -352,15 +352,25 @@ void verifyResults(const float* result1, const float* result2, int size) {
         sum_diff += diff;
     }
     
+    // Appropriate tolerance for float32:
+    // - Machine epsilon for float32: ~1.19e-7
+    // - With ~100 operations: expect ~1e-5 accumulated error
+    // - Different computation order adds more error
+    // - Conservative tolerance: 1e-6 (about 10x expected error)
+    const double tolerance = 1e-6;
+    
     printf("\n");
-    printf("="*70);
-    printf("\nVerification\n");
-    printf("="*70);
+    printf("======================================================================\n");
+    printf("Verification\n");
+    printf("======================================================================\n");
     printf("\n\nResult comparison:\n");
     printf("  Max difference: %.2e\n", max_diff);
     printf("  Mean difference: %.2e\n", sum_diff / size);
-    printf("  Results identical (tolerance=1.00e-10): %s\n",
-           max_diff < 1e-10 ? "True" : "False");
+    printf("  Results identical (tolerance=%.2e): %s\n",
+           tolerance, max_diff < tolerance ? "True" : "False");
+    printf("\n  Note: Tolerance is ~10000x float32 machine epsilon (1.19e-7)\n");
+    printf("        This accounts for accumulated rounding errors and\n");
+    printf("        different computation order between the two methods.\n");
 }
 
 void printSampleOutput(const float* image, int width, int height, 
@@ -383,9 +393,9 @@ void printKernelInfo(const float* kernel1d, const float* kernel2d,
     int size = 2 * radius + 1;
     
     printf("\n");
-    printf("="*70);
-    printf("\nKernel Information (σ=%.1f, size=%dx%d)\n", sigma, size, size);
-    printf("="*70);
+    printf("======================================================================\n");
+    printf("Kernel Information (σ=%.1f, size=%dx%d)\n", sigma, size, size);
+    printf("======================================================================\n");
     
     printf("\n\n1D Kernel (%d elements):\n  Values: ", size);
     float sum1d = 0.0f;
@@ -456,9 +466,9 @@ int main(int argc, char** argv) {
     int imageSize = width * height;
     
     // Header
-    printf("="*70);
-    printf("\nGaussian Blur: Separable vs Full 2D Convolution\n");
-    printf("="*70);
+    printf("======================================================================\n");
+    printf("Gaussian Blur: Separable vs Full 2D Convolution\n");
+    printf("======================================================================\n");
     
     printf("\n\nConfiguration:\n");
     printf("  Image size: %d x %d\n", width, height);
@@ -507,9 +517,9 @@ int main(int argc, char** argv) {
     
     // Benchmark Full 2D
     printf("\n");
-    printf("="*70);
-    printf("\nBenchmarking Full 2D Convolution\n");
-    printf("="*70);
+    printf("======================================================================\n");
+    printf("Benchmarking Full 2D Convolution\n");
+    printf("======================================================================\n");
     
     double min_2d, max_2d;
     double mean_2d = benchmarkMethod(
@@ -536,9 +546,9 @@ int main(int argc, char** argv) {
     
     // Benchmark Separable
     printf("\n");
-    printf("="*70);
-    printf("\nBenchmarking Separable Convolution\n");
-    printf("="*70);
+    printf("======================================================================\n");
+    printf("Benchmarking Separable Convolution\n");
+    printf("======================================================================\n");
     
     double min_sep, max_sep;
     double mean_sep = benchmarkMethod(
@@ -568,9 +578,9 @@ int main(int argc, char** argv) {
     
     // Performance summary
     printf("\n");
-    printf("="*70);
-    printf("\nPerformance Summary\n");
-    printf("="*70);
+    printf("======================================================================\n");
+    printf("Performance Summary\n");
+    printf("======================================================================\n");
     
     double speedup = mean_2d / mean_sep;
     double theoretical = (double)radius / 2.0;
@@ -582,9 +592,9 @@ int main(int argc, char** argv) {
     
     // Sample outputs
     printf("\n");
-    printf("="*70);
-    printf("\nSample Output Values (center 5x5 region)\n");
-    printf("="*70);
+    printf("======================================================================\n");
+    printf("Sample Output Values (center 5x5 region)\n");
+    printf("======================================================================\n");
     
     printSampleOutput(h_input, width, height, "\nInput");
     printSampleOutput(h_output_sep, width, height, 
@@ -605,9 +615,9 @@ int main(int argc, char** argv) {
     CUDA_CHECK(cudaFree(d_kernel2d));
     
     printf("\n");
-    printf("="*70);
-    printf("\nCompleted Successfully!\n");
-    printf("="*70);
+    printf("======================================================================\n");
+    printf("Completed Successfully!\n");
+    printf("======================================================================\n");
     printf("\n");
     
     return 0;

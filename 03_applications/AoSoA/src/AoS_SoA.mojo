@@ -1,4 +1,4 @@
-from python import Python, PythonObject
+from time import perf_counter_ns
 
 @fieldwise_init
 struct Particle(Copyable, ImplicitlyCopyable):
@@ -60,32 +60,30 @@ fn update_positions_soa(mut p: ParticlesSoA, dt: Float32):
         p.y[i] += p.vy[i] * dt
         p.z[i] += p.vz[i] * dt
 
-fn bench_aos(particles: List[Particle], dt: Float32, iters: Int = 5) raises -> Float64 :
-  time = Python.import_module("time")
+fn bench_aos(particles: List[Particle], dt: Float32, iters: Int = 5) -> Float64:
   var best_time = 1e9
   for _ in range(iters):
-    var start: Float64  = Float64(time.perf_counter())
+    var start = perf_counter_ns()
     update_positions_aos(particles.copy(), dt)
-    var end: Float64  = Float64(time.perf_counter())
-    var elapsed : Float64 = (end - start) * 1000.0
+    var end = perf_counter_ns()
+    var elapsed = Float64(end - start) / 1_000_000.0
     if elapsed < best_time:
       best_time = elapsed
   return best_time
 
-fn bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) raises -> Float64 :
-  time = Python.import_module("time")
+fn bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) -> Float64:
   var best_time = 1e9
   for _ in range(iters):
-    var start: Float64  = Float64(time.perf_counter())
+    var start = perf_counter_ns()
     update_positions_soa(p, dt)
-    var end: Float64  = Float64(time.perf_counter())
-    var elapsed : Float64 = (end - start) * 1000.0
+    var end = perf_counter_ns()
+    var elapsed = Float64(end - start) / 1_000_000.0
     if elapsed < best_time:
       best_time = elapsed
   return best_time
 
 
-fn benchmark(n: Int = 10_000_000) raises:
+fn benchmark(n: Int = 10_000_000):
     var aos = List[Particle]()
     aos.reserve(n)
     for i in range(n):
@@ -114,7 +112,4 @@ fn benchmark(n: Int = 10_000_000) raises:
     print("Speedup SoA/AoS: ", t_aos / t_soa)
 
 def main():
-  try:
     benchmark()
-  except e:
-    print("Benchmarking error: ", e)
