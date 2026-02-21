@@ -36,6 +36,65 @@ Both implementations use **separable convolution** (2 × 1D passes) for optimal 
 └── README.md                      # This file
 ```
 
+## Data Flow (C++ with CUDA)
+
+The following diagram shows how data moves between `main.cpp`, `gaussian_blur.hpp`, and `gaussian_blur_kernels.cu` during a blur operation:
+
+```mermaid
+flowchart TD
+    %% ── main.cpp ──────────────────────────────────────────────────
+    subgraph main.cpp
+        IMG["Image\n(width, height, pixel data)"]
+        FILL["fillRandom() / fillTestPattern()\n→ float* data_"]
+        TIMER["Timer\n(chrono high_resolution_clock)"]
+        RUN["runBenchmark()\n(iterations, stats)"]
+    end
+
+    %% ── gaussian_blur.hpp ─────────────────────────────────────────
+    subgraph gaussian_blur.hpp ["gaussian_blur.hpp  (namespace gpu)"]
+        KERN_GEN["generateKernel()\n1D Gaussian coefficients\n→ std::vector&lt;float&gt; kernel_"]
+        DEV_BUF["DeviceBuffer&lt;T&gt;\ncudaMalloc / cudaFree (RAII)"]
+        D_KERNEL["d_kernel_\n(GPU: 1D kernel weights)"]
+        D_TEMP["d_temp_\n(GPU: intermediate row-blurred image)"]
+        D_INPUT["d_input\n(GPU: input image)"]
+        D_OUTPUT["d_output\n(GPU: final blurred image)"]
+        APPLY["GaussianBlur::apply()\nh_input → GPU → h_output"]
+    end
+
+    %% ── gaussian_blur_kernels.cu ──────────────────────────────────
+    subgraph gaussian_blur_kernels.cu ["gaussian_blur_kernels.cu  (CUDA)"]
+        HKERNEL["gaussianBlurHorizontalKernel\nshared memory row tiles\n→ horizontal 1D convolution"]
+        VKERNEL["gaussianBlurVerticalKernel\nshared memory col tiles\n→ vertical 1D convolution"]
+        LAUNCH_H["launchGaussianBlurHorizontal()\nextern C wrapper"]
+        LAUNCH_V["launchGaussianBlurVertical()\nextern C wrapper"]
+    end
+
+    %% ── Data flow ─────────────────────────────────────────────────
+    IMG --> FILL
+    FILL -->|"float* h_input"| APPLY
+
+    APPLY --> KERN_GEN
+    KERN_GEN -->|"normalized float[]"| DEV_BUF
+    DEV_BUF --> D_KERNEL
+
+    APPLY -->|"cudaMemcpy H→D"| D_INPUT
+    D_KERNEL -->|"kernel weights"| LAUNCH_H
+    D_INPUT  -->|"raw pixels"| LAUNCH_H
+
+    LAUNCH_H -->|"<<<grid,block,sharedMem>>>"| HKERNEL
+    HKERNEL  -->|"row-blurred pixels"| D_TEMP
+
+    D_TEMP   -->|"intermediate pixels"| LAUNCH_V
+    D_KERNEL -->|"kernel weights"| LAUNCH_V
+    LAUNCH_V -->|"<<<grid,block,sharedMem>>>"| VKERNEL
+    VKERNEL  -->|"final blurred pixels"| D_OUTPUT
+
+    D_OUTPUT -->|"cudaMemcpy D→H"| APPLY
+    APPLY    -->|"float* h_output"| RUN
+
+    TIMER -->|"elapsed ms"| RUN
+```
+
 ## Requirements
 
 - NVIDIA GPU with CUDA support (Compute Capability 5.0+)
