@@ -44,29 +44,29 @@ The following diagram shows how data moves between `main.cpp`, `gaussian_blur.hp
 flowchart TD
     %% ── main.cpp ──────────────────────────────────────────────────
     subgraph main.cpp
-        IMG["Image\n(width, height, pixel data)"]
-        FILL["fillRandom() / fillTestPattern()\n→ float* data_"]
-        TIMER["Timer\n(chrono high_resolution_clock)"]
-        RUN["runBenchmark()\n(iterations, stats)"]
+        IMG["Image<br>(width, height, pixel data)"]
+        FILL["fillRandom() / fillTestPattern()<br>→ float* data_"]
+        TIMER["Timer<br>(chrono high_resolution_clock)"]
+        RUN["runBenchmark()<br>(iterations, stats)"]
     end
 
     %% ── gaussian_blur.hpp ─────────────────────────────────────────
     subgraph gaussian_blur.hpp ["gaussian_blur.hpp  (namespace gpu)"]
-        KERN_GEN["generateKernel()\n1D Gaussian coefficients\n→ std::vector&lt;float&gt; kernel_"]
-        DEV_BUF["DeviceBuffer&lt;T&gt;\ncudaMalloc / cudaFree (RAII)"]
-        D_KERNEL["d_kernel_\n(GPU: 1D kernel weights)"]
-        D_TEMP["d_temp_\n(GPU: intermediate row-blurred image)"]
-        D_INPUT["d_input\n(GPU: input image)"]
-        D_OUTPUT["d_output\n(GPU: final blurred image)"]
-        APPLY["GaussianBlur::apply()\nh_input → GPU → h_output"]
+        KERN_GEN["generateKernel()<br>1D Gaussian coefficients<br>→ std::vector&lt;float&gt; kernel_"]
+        DEV_BUF["DeviceBuffer&lt;T&gt;<br>cudaMalloc / cudaFree (RAII)"]
+        D_KERNEL["d_kernel_<br>(GPU: 1D kernel weights)"]
+        D_TEMP["d_temp_<br>(GPU: intermediate row-blurred image)"]
+        D_INPUT["d_input<br>(GPU: input image)"]
+        D_OUTPUT["d_output<br>(GPU: final blurred image)"]
+        APPLY["GaussianBlur::apply()<br>h_input → GPU → h_output"]
     end
 
     %% ── gaussian_blur_kernels.cu ──────────────────────────────────
     subgraph gaussian_blur_kernels.cu ["gaussian_blur_kernels.cu  (CUDA)"]
-        HKERNEL["gaussianBlurHorizontalKernel\nshared memory row tiles\n→ horizontal 1D convolution"]
-        VKERNEL["gaussianBlurVerticalKernel\nshared memory col tiles\n→ vertical 1D convolution"]
-        LAUNCH_H["launchGaussianBlurHorizontal()\nextern C wrapper"]
-        LAUNCH_V["launchGaussianBlurVertical()\nextern C wrapper"]
+        HKERNEL["gaussianBlurHorizontalKernel<br>shared memory row tiles<br>→ horizontal 1D convolution"]
+        VKERNEL["gaussianBlurVerticalKernel<br>shared memory col tiles<br>→ vertical 1D convolution"]
+        LAUNCH_H["launchGaussianBlurHorizontal()<br>extern C wrapper"]
+        LAUNCH_V["launchGaussianBlurVertical()<br>extern C wrapper"]
     end
 
     %% ── Data flow ─────────────────────────────────────────────────
@@ -81,12 +81,12 @@ flowchart TD
     D_KERNEL -->|"kernel weights"| LAUNCH_H
     D_INPUT  -->|"raw pixels"| LAUNCH_H
 
-    LAUNCH_H -->|"<<<grid,block,sharedMem>>>"| HKERNEL
+    LAUNCH_H -->|"&lt;&lt;&lt;grid,block,sharedMem&gt;&gt;&gt;"| HKERNEL
     HKERNEL  -->|"row-blurred pixels"| D_TEMP
 
     D_TEMP   -->|"intermediate pixels"| LAUNCH_V
     D_KERNEL -->|"kernel weights"| LAUNCH_V
-    LAUNCH_V -->|"<<<grid,block,sharedMem>>>"| VKERNEL
+    LAUNCH_V -->|"&lt;&lt;&lt;grid,block,sharedMem&gt;&gt;&gt;"| VKERNEL
     VKERNEL  -->|"final blurred pixels"| D_OUTPUT
 
     D_OUTPUT -->|"cudaMemcpy D→H"| APPLY
