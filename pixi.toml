@@ -12,7 +12,7 @@ version = "0.1.0"
 [tasks]
 
 [dependencies]
-mojo = ">=0.26.1.0.dev2025121217,<0.27"
+mojo = ">=0.26.2.0.dev2026022005,<0.27"
 numpy = ">=2.3.5,<3"
-emberjson = ">=0.2.1,<0.3"
+emberjson = ">=0.3.0,<0.4"
 numba = ">=0.63.1,<0.64"
