@@ -97,7 +97,7 @@ struct Fudge[sugar: Int, cream: Int, chocolate: Int = 7](Stringable):
 #    on the 'eat' function. In practice, this is roughly equivalent to writing:
 #    fn eat[cr: Int, ch: Int](f: Fudge[5, cr, ch]):
 #       print("Ate " + String(f))
-fn eat(f: Fudge[5, *_]):
+fn eat(f: Fudge[5, ...]):
   print("Ate " + String(f))
 
 def main():

@@ -53,8 +53,8 @@ struct SharedDict(Movable, ImplicitlyCopyable):
         attributesDict: Dict[String, String] = {}
         self.attributes = ArcPointer(attributesDict.copy())
 
-    fn __copyinit__(out self, other: Self):
-        self.attributes = other.attributes
+    fn __copyinit__(out self, copy: Self):
+        self.attributes = copy.attributes
 
     def __setitem__(mut self, key: String, value: String):
         self.attributes[][key] = value

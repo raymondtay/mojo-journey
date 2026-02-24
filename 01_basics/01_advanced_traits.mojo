@@ -48,8 +48,8 @@ fn repeat[MsgType: Stringable, //, count : Int](msg: MsgType):
     print(String(msg))
 
 # 2. Parameterized structs
-struct GenericArray[ElementType: Copyable & Movable]:
-  var data: UnsafePointer[Self.ElementType, MutOrigin.external]
+struct GenericArray[ElementType: Copyable & Movable & ImplicitlyDestructible]:
+  var data: UnsafePointer[Self.ElementType, MutExternalOrigin]
   var size: Int
   
   fn __init__(out self, var *elements: Self.ElementType):
@@ -75,7 +75,7 @@ struct GenericArray[ElementType: Copyable & Movable]:
 
 
 @fieldwise_init
-struct Container[ElementType: Movable]:
+struct Container[ElementType: Movable & ImplicitlyDestructible]:
   var element: Self.ElementType
 
   def __str__[

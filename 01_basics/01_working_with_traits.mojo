@@ -34,9 +34,9 @@ trait Stacklike:
   alias EltType: Copyable & Movable
 
   fn push(mut self, var item: Self.EltType):
-    pass
+    ...
   fn pop(mut self) -> Self.EltType:
-    pass
+    ...
 
 
 struct MyStack[type: Copyable & Movable](Stacklike):

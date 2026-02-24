@@ -1,6 +1,7 @@
 import compile
 
-from emberjson import parse, to_string
+# emberjson 0.3.0 is binary-incompatible with this Mojo nightly; disabled until updated
+# from emberjson import parse, to_string
 from utils.numerics import max_finite, min_finite
 
 struct Source:
@@ -32,11 +33,9 @@ def describeDType[dtype: DType]():
 
 
 def main():
-    var data = parse(
-        '{ "name": "Alice", "age": 30, "isStudent": false, "courses": ["Math",'
-        ' "Science"] }'
-    )
-    print(to_string[pretty=True](data))
+    # emberjson disabled (binary incompatible with current nightly):
+    # var data = parse('{ "name": "Alice", "age": 30, "isStudent": false, "courses": ["Math", "Science"] }')
+    # print(to_string[pretty=True](data))
 
     describeDType[DType.float32]()
 
