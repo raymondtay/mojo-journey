@@ -14,6 +14,9 @@ An educational repository exploring Mojo programming for HPC (High-Performance C
 # Run a Mojo file
 pixi run mojo <path/to/file>.mojo
 
+# Run a test
+pixi run mojo tests/<test_file>.mojo
+
 # Compile a Mojo file
 pixi run mojo build <path/to/file>.mojo
 
@@ -27,12 +30,12 @@ make amx-asm
 pixi update
 ```
 
-No formal test framework or linting/formatting tools are configured.
+No formal test framework is configured; tests are run as standalone Mojo files in the `tests/` directory.
 
 ## Key Dependencies (pixi.toml)
 
 - `mojo >= 0.26.1` (nightly, from modular conda channel)
-- `numpy`, `emberjson`, `numba`
+- `numpy`, `emberjson`, `numba`, `pygame`
 
 ## Repository Structure
 
@@ -43,6 +46,7 @@ No formal test framework or linting/formatting tools are configured.
 - `03_applications/` — HPC applications: AoS/SoA/AoSoA memory layouts with cross-language benchmarks (Mojo, C++, CUDA, Python/Numba)
 - `10_hyperscaling_for_Mojo_programmers/` — CPU optimization: SIMD, AVX-512, AMX with assembly verification
 - `docs/` — Reference papers on memory hierarchies
+- `tests/` — Standalone test files for verifying language and performance features
 
 ## Architecture Notes
 
