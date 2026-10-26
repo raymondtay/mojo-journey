@@ -6,7 +6,7 @@ channels = [
   "https://repo.prefix.dev/modular-community",
 ]
 name = "mojo-journey"
-platforms = ["osx-arm64"]
+platforms = ["osx-arm64", "linux-x86_64", "linux-aarch64"]
 version = "0.1.0"
 
 [tasks]
