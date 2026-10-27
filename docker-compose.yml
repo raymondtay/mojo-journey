@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  mojo-journey:
+    build: .
+    image: mojo-journey:latest
+    volumes:
+      - .:/app
+    # Use an interactive TTY so the container doesn't exit immediately
+    stdin_open: true
+    tty: true
+    # Ensure the container runs as the same user as the host to avoid permission issues with volumes
+    user: "${UID:-1000}:${GID:-1000}"
