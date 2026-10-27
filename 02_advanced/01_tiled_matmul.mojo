@@ -38,7 +38,7 @@
 # either barrier would break this algorithm's correctness.
 #
 from math import ceildiv
-from sys import exit, has_accelerator
+from std.sys import exit, has_accelerator
 
 from gpu.sync import barrier
 from gpu.host import DeviceContext
@@ -78,7 +78,7 @@ comptime matrix_c_layout = Layout.row_major(MATRIX_M, MATRIX_N) # A: M x N
 comptime tile_a_layout = Layout.row_major(TILE_M, TILE_K)
 comptime tile_b_layout = Layout.row_major(TILE_K, TILE_N)
 
-fn tiled_matmul_kernel(
+def tiled_matmul_kernel(
     matrix_a: LayoutTensor[float_dtype, matrix_a_layout, MutAnyOrigin],
     matrix_b: LayoutTensor[float_dtype, matrix_b_layout, MutAnyOrigin],
     matrix_c: LayoutTensor[float_dtype, matrix_c_layout, MutAnyOrigin],
@@ -113,7 +113,6 @@ fn tiled_matmul_kernel(
 
   # Iterate through tiles along K dimension; use @parameter to unroll the loop
   # at compile time.
-  @parameter
   for k_tile in range(0, MATRIX_K, TILE_K):
     var a_global_row = tile_row_start + thread_y
     var a_global_col = UInt(k_tile) + thread_x
@@ -140,7 +139,6 @@ fn tiled_matmul_kernel(
     # Ensure all threads finish loading files before any thread starts computing
     barrier()
 
-    @parameter
     for k in range(TILE_K):
       var element_from_a = tile_a_shared[thread_y, k]
       var element_from_b = tile_b_shared[k, thread_x]

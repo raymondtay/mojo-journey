@@ -1,22 +1,22 @@
 
-fn incr(n: Int) raises -> Int:
+def incr(n raises:
   if n == Int.MAX:
     raise "inc: integer overflow"
   else:
     return n + 1
 
 # This function cannot compile because it handles possible error
-# fn unhandled_error(n: Int):
+# def unhandled_error(n: Int):
 #   print(n, " + 1 = ", incr(n))
 
-fn handled_error(n: Int):
+def handled_error(n: Int):
   try:
     print(n, " + 1 = ", incr(n))
   except e:
     print("Handler error: ", e)
 
 # 'def' always means that it's possible to raise exceptions
-def incr2(n: Int) -> Int:
+def incr2(n raises:
   if n == Int.MAX:
     raise "inc: integer overflow"
   else:

@@ -21,14 +21,14 @@ import time
 struct Timer(ImplicitlyCopyable, Movable):
   var start_time : Int
 
-  fn __init__(out self):
+  def __init__(out self):
     self.start_time = 0
 
-  fn __enter__(mut self) -> Self:
+  def __enter__(mut self) -> Self:
     self.start_time = Int(time.perf_counter_ns())
     return self
 
-  fn __exit__(mut self):
+  def __exit__(mut self):
     end_time = time.perf_counter_ns()
     elapsed_time_ms = round((Float64(end_time) - Float64(self.start_time)) / 1e6, 3)
     print("Elapsed time: ", elapsed_time_ms, " milliseconds")
@@ -37,19 +37,19 @@ struct Timer(ImplicitlyCopyable, Movable):
 struct ConditionalTimer(ImplicitlyCopyable, Movable):
   var start_time : Int
 
-  fn __init__(out self):
+  def __init__(out self):
     self.start_time = 0
 
-  fn __enter__(mut self) -> Self:
+  def __enter__(mut self) -> Self:
     self.start_time = Int(time.perf_counter_ns())
     return self
 
-  fn __exit__(mut self):
+  def __exit__(mut self):
     end_time = time.perf_counter_ns()
     elapsed_time_ms = round((Float64(end_time) - Float64(self.start_time)) / 1e6, 3)
     print("Elapsed time: ", elapsed_time_ms, " milliseconds")
 
-  fn __exit__(mut self, e : Error) raises -> Bool:
+  def __exit__(mut self, e : Error) raises -> Bool:
     if String(e) == "just a warning":
       print("Suppressing error: " , e)
       self.__exit__()
@@ -59,7 +59,7 @@ struct ConditionalTimer(ImplicitlyCopyable, Movable):
       self.__exit__()
       return False
 
-def flaky_identity(n : Int) -> Int:
+def flaky_identity(n: Int) raises:
   if (n % 4) == 0:
     raise "really bad"
   elif (n % 2) == 0:
@@ -67,7 +67,7 @@ def flaky_identity(n : Int) -> Int:
   else:
     return n
 
-def main():
+def main() raises:
   for i in range(1, 9):
     with ConditionalTimer():
       print("\nBeginning Execution")

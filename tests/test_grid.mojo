@@ -1,4 +1,4 @@
-from testing import assert_equal, assert_true
+from std.testing import assert_equal, assert_true
 
 # Grid struct copied from 01_basics/gridv1.mojo for testing.
 @fieldwise_init
@@ -7,7 +7,7 @@ struct Grid(Copyable, Movable, Stringable):
     var cols: Int
     var data: List[List[Int]]
 
-    fn __str__(self) -> String:
+    def __str__(self) -> String:
         str = String()
         for row in range(self.rows):
             for col in range(self.cols):
@@ -19,13 +19,13 @@ struct Grid(Copyable, Movable, Stringable):
                 str += "\n"
         return str
 
-    fn __getitem__(self, row: Int, col: Int) -> Int:
+    def __getitem__(self, row: Int, col: Int) -> Int:
         return self.data[row][col]
 
-    fn __setitem__(mut self, row: Int, col: Int, value: Int) -> None:
+    def __setitem__(mut self, row: Int, col: Int, value: Int) -> None:
         self.data[row][col] = value
 
-    fn evolve(self) -> Self:
+    def evolve(self) -> Self:
         next_generation = List[List[Int]]()
         for row in range(self.rows):
             row_data = List[Int]()
@@ -56,7 +56,7 @@ struct Grid(Copyable, Movable, Stringable):
         return Self(self.rows, self.cols, next_generation^)
 
 
-fn make_grid(rows: Int, cols: Int) -> Grid:
+def make_grid(rows: Int, cols: Int) -> Grid:
     """Create an empty grid (all zeros)."""
     var data = List[List[Int]]()
     for _ in range(rows):
@@ -67,7 +67,7 @@ fn make_grid(rows: Int, cols: Int) -> Grid:
     return Grid(rows, cols, data^)
 
 
-def test_getitem_setitem():
+def test_getitem_setitem() raises:
     var g = make_grid(3, 3)
     assert_equal(g[0, 0], 0)
     g[1, 2] = 1
@@ -77,20 +77,20 @@ def test_getitem_setitem():
     assert_equal(g[2, 2], 0)
 
 
-def test_str_empty_grid():
+def test_str_empty_grid() raises:
     var g = make_grid(2, 3)
     # Empty 2x3 grid: 3 spaces, newline, 3 spaces
     assert_equal(String(g), "   \n   ")
 
 
-def test_str_with_live_cells():
+def test_str_with_live_cells() raises:
     var g = make_grid(2, 2)
     g[0, 0] = 1
     g[1, 1] = 1
     assert_equal(String(g), "* \n *")
 
 
-def test_evolve_block():
+def test_evolve_block() raises:
     """A 2x2 block is a still life - it should not change after evolving.
     We use a 4x4 grid to avoid wrap-around interference."""
     var g = make_grid(4, 4)
@@ -108,7 +108,7 @@ def test_evolve_block():
     assert_equal(next_g[3, 3], 0)
 
 
-def test_evolve_blinker():
+def test_evolve_blinker() raises:
     """A blinker oscillates between horizontal and vertical with period 2.
     Horizontal: row 2 cols 1,2,3 in a 5x5 grid.
     After one step it becomes vertical: rows 1,2,3 col 2."""
@@ -134,7 +134,7 @@ def test_evolve_blinker():
     assert_equal(gen2[3, 2], 0)
 
 
-def test_evolve_all_dead():
+def test_evolve_all_dead() raises:
     """An empty grid stays empty."""
     var g = make_grid(3, 3)
     var next_g = g.evolve()
@@ -143,7 +143,7 @@ def test_evolve_all_dead():
             assert_equal(next_g[r, c], 0)
 
 
-def test_evolve_underpopulation():
+def test_evolve_underpopulation() raises:
     """A single live cell with no neighbours dies."""
     var g = make_grid(5, 5)
     g[2, 2] = 1

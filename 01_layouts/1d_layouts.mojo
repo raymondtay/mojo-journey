@@ -1,13 +1,13 @@
 from layout import Layout, IntTuple, print_layout
 
 
-fn single_dim_layout():
+def single_dim_layout():
     var layout = Layout(IntTuple(8, 1))
     print("size =", layout.size())
     print_layout(layout)
 
 
-fn two_dim_layout():
+def two_dim_layout():
     """
     It's instructive to examine for coherency of the (shape:stride) format.
     Take some time to understand and trace through the shape and stride.

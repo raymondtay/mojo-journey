@@ -1,6 +1,6 @@
 from gpu.host import DeviceContext
 from gpu import block_dim, block_idx, thread_idx
-from sys import has_accelerator, has_apple_gpu_accelerator
+from std.sys import has_accelerator, has_apple_gpu_accelerator
 from layout import Layout, LayoutTensor
 from math import ceildiv
 
@@ -8,7 +8,7 @@ alias block_size = 256
 alias num_blocks = ceildiv(vector_size, block_size)
 
 
-fn vector_addition(
+def vector_addition(
     lhs_tensor: LayoutTensor[float_dtype, layout, MutAnyOrigin],
     rhs_tensor: LayoutTensor[float_dtype, layout, MutAnyOrigin],
     out_tensor: LayoutTensor[float_dtype, layout, MutAnyOrigin],
@@ -27,7 +27,7 @@ fn vector_addition(
         out_tensor[tid] = lhs_tensor[tid] + rhs_tensor[tid]
 
 
-fn print_threads():
+def print_threads():
     """Print thread ids."""
     print(
         "Block_index: [",
@@ -121,7 +121,6 @@ def create_host_memory_device_memory_n_execute(ctx: DeviceContext):
 
 
 def main():
-    @parameter
     if not has_accelerator():
         print("No compatible GPU found!")
     elif has_apple_gpu_accelerator():

@@ -1,10 +1,10 @@
-from testing import assert_true, assert_equal
-from memory import UnsafePointer
-from sys import align_of
-from builtin.simd import SIMD
+from std.testing import assert_true, assert_equal
+from std.memory import UnsafePointer
+from std.sys import align_of
+from std.simd import SIMD
 
 
-fn saxpy16(
+def saxpy16(
     y: UnsafePointer[mut=True, Scalar[DType.float32]],
     x: UnsafePointer[mut=True, Scalar[DType.float32]],
     n: Int,
@@ -29,35 +29,35 @@ fn saxpy16(
         i += 1
 
 
-fn approx_eq(a: Float32, b: Float32, tol: Float32 = 1e-4) -> Bool:
+def approx_eq(a: Float32, b: Float32, tol: Float32 = 1e-4) -> Bool:
     var diff = a - b
     if diff < 0:
         diff = -diff
     return diff < tol
 
 
-fn alloc_and_fill(n: Int, value: Float32) -> UnsafePointer[mut=True, Scalar[DType.float32]]:
+def alloc_and_fill(n: Int, value: Float32) -> UnsafePointer[mut=True, Scalar[DType.float32]]:
     var ptr = UnsafePointer[Scalar[DType.float32]].alloc(n)
     for i in range(n):
-        (ptr + i).init_pointee_copy(value)
+         ptr .unsafe_offset(i).init_pointee_copy(value)
     return ptr
 
 
-fn alloc_iota(n: Int) -> UnsafePointer[mut=True, Scalar[DType.float32]]:
+def alloc_iota(n: Int) -> UnsafePointer[mut=True, Scalar[DType.float32]]:
     """Allocate and fill with 0, 1, 2, ..., n-1."""
     var ptr = UnsafePointer[Scalar[DType.float32]].alloc(n)
     for i in range(n):
-        (ptr + i).init_pointee_copy(Float32(i))
+         ptr .unsafe_offset(i).init_pointee_copy(Float32(i))
     return ptr
 
 
-fn free_ptr(ptr: UnsafePointer[mut=True, Scalar[DType.float32]], n: Int):
+def free_ptr(ptr: UnsafePointer[mut=True, Scalar[DType.float32]], n: Int):
     for i in range(n):
-        (ptr + i).destroy_pointee()
-    ptr.free()
+         ptr .unsafe_offset(i).destroy_pointee()
+    ptr.unsafe_free()
 
 
-def test_saxpy_aligned_32():
+def test_saxpy_aligned_32() raises:
     """Test with n=32 (exactly 2 SIMD iterations, no scalar tail)."""
     var n = 32
     var a = Float32(2.0)
@@ -74,7 +74,7 @@ def test_saxpy_aligned_32():
     free_ptr(y, n)
 
 
-def test_saxpy_aligned_16():
+def test_saxpy_aligned_16() raises:
     """Test with n=16 (exactly 1 SIMD iteration)."""
     var n = 16
     var a = Float32(0.5)
@@ -91,7 +91,7 @@ def test_saxpy_aligned_16():
     free_ptr(y, n)
 
 
-def test_saxpy_unaligned_17():
+def test_saxpy_unaligned_17() raises:
     """Test with n=17 (1 SIMD iteration + 1 scalar tail element)."""
     var n = 17
     var a = Float32(2.0)
@@ -107,7 +107,7 @@ def test_saxpy_unaligned_17():
     free_ptr(y, n)
 
 
-def test_saxpy_unaligned_15():
+def test_saxpy_unaligned_15() raises:
     """Test with n=15 (pure scalar tail, no SIMD iteration)."""
     var n = 15
     var a = Float32(3.0)
@@ -124,7 +124,7 @@ def test_saxpy_unaligned_15():
     free_ptr(y, n)
 
 
-def test_saxpy_single_element():
+def test_saxpy_single_element() raises:
     """Test with n=1."""
     var n = 1
     var a = Float32(5.0)
@@ -140,7 +140,7 @@ def test_saxpy_single_element():
     free_ptr(y, n)
 
 
-def test_saxpy_zero_length():
+def test_saxpy_zero_length() raises:
     """Test with n=0 - should be a no-op."""
     var n = 0
     var x = UnsafePointer[Scalar[DType.float32]].alloc(1)
@@ -155,11 +155,11 @@ def test_saxpy_zero_length():
 
     (x).destroy_pointee()
     (y).destroy_pointee()
-    x.free()
-    y.free()
+    x.unsafe_free()
+    y.unsafe_free()
 
 
-def test_saxpy_with_iota():
+def test_saxpy_with_iota() raises:
     """Test with varying x values (0, 1, 2, ...) and a=1, y=0."""
     var n = 20
     var a = Float32(1.0)
@@ -176,7 +176,7 @@ def test_saxpy_with_iota():
     free_ptr(y, n)
 
 
-def test_saxpy_zero_scalar():
+def test_saxpy_zero_scalar() raises:
     """Test with a=0 — y should remain unchanged."""
     var n = 20
     var a = Float32(0.0)

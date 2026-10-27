@@ -6,10 +6,10 @@ struct ImmovableObject(Writable):
     var name: String
 
     @implicit
-    fn __init__(out self, var name: String):
+    def __init__(out self, var name: String):
         self.name = name^
 
-    fn write_to(self, mut writer: Some[Writer]):
+    def write_to(self, mut writer: Some[Writer]):
         writer.write("Immovable Object is: ", self.name)
 
 

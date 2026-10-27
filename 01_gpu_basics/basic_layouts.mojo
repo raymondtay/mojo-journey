@@ -43,7 +43,7 @@ from layout import IntTuple, Layout, print_layout
 #
 
 
-fn row_and_column_major():
+def row_and_column_major():
     print("row major and column major")
     var l2x4row_major = Layout.row_major(2, 4)
     print_layout(l2x4row_major)
@@ -53,7 +53,7 @@ fn row_and_column_major():
     print()
 
 
-fn coords_to_index():
+def coords_to_index():
     print("coordinates to index")
     var l3x4row_major = Layout.row_major(3, 4)
     print_layout(l3x4row_major)
@@ -65,7 +65,7 @@ fn coords_to_index():
     print()
 
 
-fn nested_modes():
+def nested_modes():
     print("nested modes")
     var layout_a = Layout([4, 4], [4, 1])
     print_layout(layout_a)
@@ -80,7 +80,7 @@ fn nested_modes():
     print()
 
 
-fn tiled_layout():
+def tiled_layout():
     var tiled_layout = Layout(
         IntTuple(IntTuple(3, 2), IntTuple(2, 5)),  # shape
         IntTuple(IntTuple(1, 6), IntTuple(3, 12)),  # strides
