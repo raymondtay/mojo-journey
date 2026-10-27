@@ -17,10 +17,10 @@
 struct Balloon(Writable):
   var color: String
 
-  fn write_to(self, mut writer : Some[Writer]):
+  def write_to(self, mut writer : Some[Writer]):
     writer.write(String("a ", self.color, " balloon"))
 
-  fn __del__(deinit self):
+  def __del__(deinit self):
     print("Destroyed", String(self))
 
 def main():

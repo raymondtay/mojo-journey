@@ -13,7 +13,7 @@ struct NameList:
     for name in names:
       self.names.append(name)
 
-  def __getitem__(ref self, index: Int) -> ref [self.names] String:
+  def __getitem__(ref self, index raises:
     '''classical object[index].
     Additional advantage of `ref` return arguments is the ability to support
     parameter mutability. In this context, the method signature is instructive
@@ -31,7 +31,7 @@ struct NameList:
     else:
       raise Error("index out of bounds")
 
-fn pass_immutable_list(list: NameList) raises:
+def pass_immutable_list(list: NameList) raises:
   print(list[2])
 
 def main():

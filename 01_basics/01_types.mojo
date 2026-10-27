@@ -6,16 +6,16 @@ from utils.numerics import max_finite, min_finite
 
 struct Source:
   var name: String
-  fn __init__(out self, n: String):
+  def __init__(out self, n: String):
     self.name = n
 
 struct Target:
   var name: String
   @implicit
-  fn __init__(out self, s: Source):
+  def __init__(out self, s: Source):
     self.name = s.name
 
-fn r[
+def r[
     size: Int
 ](
     va: SIMD[DType.int8, size],

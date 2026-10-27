@@ -1,12 +1,12 @@
 from math import iota
-from sys import exit, has_accelerator
+from std.sys import exit, has_accelerator
 
 from gpu.host import DeviceContext
 from gpu import block_dim, block_idx, thread_idx
 
 comptime num_elements = 20
 
-fn scalar_add(
+def scalar_add(
     vector: UnsafePointer[Float32, MutAnyOrigin],
     size: Int,
     scalar: Float32
@@ -38,7 +38,6 @@ fn scalar_add(
 
 
 def main():
-  @parameter
   if not has_accelerator():
     print("No GPUs detected")
     exit(0)

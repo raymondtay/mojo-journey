@@ -9,7 +9,7 @@ struct Particle(Copyable, ImplicitlyCopyable):
     var vy: Float32
     var vz: Float32
 
-    fn __copyinit__(out self, existing: Self):
+    def __copyinit__(out self, existing: Self):
       self.x = existing.x.copy()
       self.y = existing.y.copy()
       self.z = existing.z.copy()
@@ -26,7 +26,7 @@ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
     var vy: List[Float32]
     var vz: List[Float32]
 
-    fn __init__(out self, n: Int):
+    def __init__(out self, n: Int):
         self.x = List[Float32](fill=0, length=n)
         self.y = List[Float32](fill=0, length=n)
         self.z = List[Float32](fill=0, length=n)
@@ -34,7 +34,7 @@ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
         self.vy = List[Float32](fill=0, length=n)
         self.vz = List[Float32](fill=0, length=n)
 
-    fn __copyinit__(out self, existing: Self):
+    def __copyinit__(out self, existing: Self):
       self.x = existing.x.copy()
       self.y = existing.y.copy()
       self.z = existing.z.copy()
@@ -43,7 +43,7 @@ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
       self.vz = existing.vz.copy()
 
 # Array-of-Structures: contiguous particles[]
-fn update_positions_aos(var particles: List[Particle], dt: Float32):
+def update_positions_aos(var particles: List[Particle], dt: Float32):
     var n = len(particles)
     for i in range(n):
         # Load one particle (brings x,y,z,vx,vy,vz into cache)
@@ -53,14 +53,14 @@ fn update_positions_aos(var particles: List[Particle], dt: Float32):
         p.z += p.vz * dt
         particles[i] = p
 
-fn update_positions_soa(mut p: ParticlesSoA, dt: Float32):
+def update_positions_soa(mut p: ParticlesSoA, dt: Float32):
     var n = len(p.x)
     for i in range(n):
         p.x[i] += p.vx[i] * dt
         p.y[i] += p.vy[i] * dt
         p.z[i] += p.vz[i] * dt
 
-fn bench_aos(particles: List[Particle], dt: Float32, iters: Int = 5) -> Float64:
+def bench_aos(particles: List[Particle], dt: Float32, iters: Int = 5) -> Float64:
   var best_time = 1e9
   for _ in range(iters):
     var start = perf_counter_ns()
@@ -71,7 +71,7 @@ fn bench_aos(particles: List[Particle], dt: Float32, iters: Int = 5) -> Float64:
       best_time = elapsed
   return best_time
 
-fn bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) -> Float64:
+def bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) -> Float64:
   var best_time = 1e9
   for _ in range(iters):
     var start = perf_counter_ns()
@@ -83,7 +83,7 @@ fn bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) -> Float64:
   return best_time
 
 
-fn benchmark(n: Int = 10_000_000):
+def benchmark(n: Int = 10_000_000):
     var aos = List[Particle]()
     aos.reserve(n)
     for i in range(n):

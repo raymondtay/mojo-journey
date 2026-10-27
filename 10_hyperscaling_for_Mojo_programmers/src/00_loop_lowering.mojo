@@ -16,12 +16,12 @@
 # In cell-3, write the file into our project directory
 # %%writefile mojo_project/loop_lowering.mojo
 
-from memory import UnsafePointer
-from sys import align_of
-from builtin.simd import SIMD
+from std.memory import UnsafePointer
+from std.sys import align_of
+from std.simd import SIMD
 from compile import compile_info
 
-fn saxpy16(
+def saxpy16(
     y: UnsafePointer[mut=True, Scalar[DType.float32]],
     x: UnsafePointer[mut=True, Scalar[DType.float32]],
     n: Int,
@@ -47,7 +47,7 @@ fn saxpy16(
       (y + i).store[width=1](a * xi + yi)
       i += 1
 
-fn main():
+def main():
     info = compile_info[saxpy16]()
     print(info)
 

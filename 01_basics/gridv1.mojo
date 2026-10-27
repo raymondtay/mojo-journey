@@ -13,7 +13,7 @@ struct Grid(Copyable, Movable, Stringable):
     var cols: Int
     var data: List[List[Int]]
 
-    fn __str__(self) -> String:
+    def __str__(self) -> String:
         str = String()
 
         for row in range(self.rows):
@@ -27,18 +27,18 @@ struct Grid(Copyable, Movable, Stringable):
         return str
 
     # Getters retrieve "state"
-    fn __getitem__(self, row: Int, col: Int) -> Int:
+    def __getitem__(self, row: Int, col: Int) -> Int:
         return self.data[row][col]
 
     # Setters alter "state" and don't return any values.
-    fn __setitem__(mut self, row: Int, col: Int, value: Int) -> None:
+    def __setitem__(mut self, row: Int, col: Int, value: Int) -> None:
         self.data[row][col] = value
 
     # Static methods do not operate on specific instances of the type,
     # so it can be invoked as a utility function. We can decorate in
     # using the @staticmethod decorator.
     @staticmethod
-    fn random(rows: Int, cols: Int) -> Self:
+    def random(rows: Int, cols: Int) -> Self:
         # seed the random number generator using the current time.
         random.seed()
 
@@ -53,7 +53,7 @@ struct Grid(Copyable, Movable, Stringable):
 
         return Self(rows, cols, data^)
 
-    fn evolve(self) -> Self:
+    def evolve(self) -> Self:
         next_generation = List[List[Int]]()
 
         for row in range(self.rows):

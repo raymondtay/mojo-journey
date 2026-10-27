@@ -20,7 +20,7 @@
 #     values: SIMD[dtype, width],
 #     /,
 #     # positional-or-keyword parameter
-#     compare: fn (Scalar[dtype], Scalar[dtype]) -> Int,
+#     compare: def (Scalar[dtype], Scalar[dtype]) -> Int,
 #     *,
 #     # keyword-only parameter
 #     reverse: Bool = False,
@@ -42,8 +42,7 @@
 # - An equals sign (=) introduces a default value for an optional parameter.
 
 # 1. Parameterized functions
-fn repeat[MsgType: Stringable, //, count : Int](msg: MsgType):
-  @parameter
+def repeat[MsgType: Stringable, //, count : Int](msg: MsgType):
   for _ in range(count):
     print(String(msg))
 
@@ -52,25 +51,25 @@ struct GenericArray[ElementType: Copyable & Movable & ImplicitlyDestructible]:
   var data: UnsafePointer[Self.ElementType, MutExternalOrigin]
   var size: Int
   
-  fn __init__(out self, var *elements: Self.ElementType):
+  def __init__(out self, var *elements: Self.ElementType):
     self.size = len(elements)
     self.data = alloc[Self.ElementType](self.size)
     for i in range(self.size):
-      (self.data + i).init_pointee_move(elements[i].copy())
+       self.data .unsafe_offset(i).init_pointee_move(elements[i].copy())
 
-  fn __del__(deinit self):
+  def __del__(deinit self):
     for i in range(self.size):
-      (self.data + i).destroy_pointee()
-    self.data.free()
+       self.data .unsafe_offset(i).destroy_pointee()
+    self.data.unsafe_free()
 
-  fn __getitem__(self, i: Int) raises -> ref[self] Self.ElementType:
+  def __getitem__(self, i raises:
     if i < self.size:
       return self.data[i]
     else:
       raise Error("array out-of-bounds, trying to reference index: {}".format(i))
 
   @staticmethod
-  fn splat(count: Int, value: Self.ElementType) -> Self:
+  def splat(count: Int, value: Self.ElementType) -> Self:
     return GenericArray[Self.ElementType](value.copy())
 
 
@@ -84,27 +83,27 @@ struct Container[ElementType: Movable & ImplicitlyDestructible]:
     return String("Container[{}]".format(String(self.element)))
 
 # 3. Inference failures - YES It CAN HAPPEN ☺
-struct One[tpe: Writable & Copyable & Movable]:
+struct One[tpe: Writable & Copyable & Movable & ImplicitlyDestructible]:
   var value: Self.tpe
 
-  fn __init__(out self, value: Self.tpe):
+  def __init__(out self, value: Self.tpe):
     self.value = value.copy()
 
 def use_one():
   s1 = One("456")
   s2 = One(123)
 
-struct Two[tpe: Writable & Copyable & Movable]:
+struct Two[tpe: Writable & Copyable & Movable & ImplicitlyDestructible]:
   var val1: Self.tpe
   var val2: Self.tpe
 
-  fn __init__(out self, val1: One[Self.tpe], val2: One[Self.tpe]):
+  def __init__(out self, val1: One[Self.tpe], val2: One[Self.tpe]):
     self.val1 = val1.value.copy()
     self.val2 = val2.value.copy()
     print(String(self.val1), String(self.val2))
 
   @staticmethod
-  fn fire(thing1: One[Self.tpe], thing2: One[Self.tpe]):
+  def fire(thing1: One[Self.tpe], thing2: One[Self.tpe]):
     print("🔥!!!!", String(thing1.value), String(thing2.value))
 
 def use_two():
@@ -118,11 +117,11 @@ def use_two():
 # parameters. Because the signature is processed left-to-right, a parameter can
 # only depend on a parameter earlier in the parameter list.
 
-fn dependent_type[dtype: DType, value: Scalar[dtype]]():
+def dependent_type[dtype: DType, value: Scalar[dtype]]():
   print("Value: " , value)
   print("Value is floating-point: ", dtype.is_floating_point())
 
-fn dependent_type2[dtype: DType, //, value: Scalar[dtype]]():
+def dependent_type2[dtype: DType, //, value: Scalar[dtype]]():
   print("Value: " , value)
   print("Value is floating-point: ", dtype.is_floating_point())
 

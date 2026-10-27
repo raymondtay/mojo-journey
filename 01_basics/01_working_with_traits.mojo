@@ -1,60 +1,52 @@
-trait Flyable:
-  fn fly(self):
-    pass
-
-trait Quackable:
-  fn quack(self):
-    pass
-
+  def fly(self):
+    ...
+  def quack(self):
+    ...
 @fieldwise_init
 struct Duck(Copyable, Quackable, Movable, Flyable):
-  fn quack(self):
+  def quack(self):
     print("Quack!")
-  fn fly(self):
+  def fly(self):
     print("Wee! Daffy duck is flying!")
 
 @fieldwise_init
 struct StealthCow(Copyable, Quackable, Movable, Flyable):
-  fn quack(self):
+  def quack(self):
     print("Moo!")
-  fn fly(self):
+  def fly(self):
     print("Wee! Cows are flying!")
 
-fn make_it_quack[DuckType : Quackable](some_duck: DuckType) :
+def make_it_quack[DuckType : Quackable](some_duck: DuckType) :
   some_duck.quack()
 
-fn make_it_quack2(some_duck: Some[Quackable]) :
+def make_it_quack2(some_duck: Some[Quackable]) :
   some_duck.quack()
 
-fn quack_n_go[tpe: Quackable & Flyable](object: tpe):
+def quack_n_go[tpe: Quackable & Flyable](object: tpe):
   object.quack()
   object.fly()
 
-trait Stacklike:
   alias EltType: Copyable & Movable
-
-  fn push(mut self, var item: Self.EltType):
+  def push(mut self, var item: Self.EltType):
     ...
-  fn pop(mut self) -> Self.EltType:
+  def pop(mut self) -> Self.EltType:
     ...
-
-
 struct MyStack[type: Copyable & Movable](Stacklike):
   alias EltType = Self.type
   alias list_type = List[Self.EltType]
 
   var list : Self.list_type
 
-  fn __init__(out self):
+  def __init__(out self):
     self.list = Self.list_type()
 
-  fn push(mut self, var item: Self.EltType):
+  def push(mut self, var item: Self.EltType):
     self.list.append(item^)
 
-  fn pop(mut self) -> Self.EltType:
+  def pop(mut self) -> Self.EltType:
     return self.list.pop()
   
-  fn dump[
+  def dump[
       WritableEltType: Writable & Copyable & Movable
       ](self: MyStack[WritableEltType]) :
     print("[", end="")

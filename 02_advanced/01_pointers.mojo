@@ -44,16 +44,16 @@
 # * UnsafePointer points to one or more consecutive memory locations, and refer to
 #                unitialized memory.
 #
-from memory import *
+from std.memory import *
 
 struct SharedDict(Movable, ImplicitlyCopyable):
     var attributes: ArcPointer[Dict[String, String]]
 
-    fn __init__(out self):
+    def __init__(out self):
         attributesDict: Dict[String, String] = {}
         self.attributes = ArcPointer(attributesDict.copy())
 
-    fn __copyinit__(out self, copy: Self):
+    def __copyinit__(out self, copy: Self):
         self.attributes = copy.attributes
 
     def __setitem__(mut self, key: String, value: String):
@@ -62,10 +62,10 @@ struct SharedDict(Movable, ImplicitlyCopyable):
     def __getitem__(self, key: String) -> String:
         return self.attributes[].get(key, default="")
 
-fn alloc_float_values():
+def alloc_float_values():
   var float_ptr = alloc[Float64](6)
   for offset in range(6): # generates values 0 .. 5
-    (float_ptr+offset).init_pointee_copy(0.0)
+     float_ptr.unsafe_offset(offset).init_pointee_copy(0.0)
 
   float_ptr[2] = 3.0
   for offset in range(6):
