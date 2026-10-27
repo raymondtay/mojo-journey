@@ -8,10 +8,10 @@
 # ------
 # 1) mojo build 01_helloworld.mojo
 #    ./01_helloworld
-import time
+from std import time
 
 from gridv1 import Grid
-from python import Python
+from std.python import Python
 
 
 def run_display(
@@ -21,28 +21,28 @@ def run_display(
     background_colour: String = "black",
     cell_colour: String = "green",
     pause: Float64 = 0.1,
-) -> None:
+) raises -> None:
     # import the pygame python package
-    pygame = Python.import_module("pygame")
+    var pygame = Python.import_module("pygame")
 
     # initialize pygame modules
     pygame.init()
 
     # create a window and sets its title
-    window = pygame.display.set_mode(Python.tuple(window_height, window_width))
+    var window = pygame.display.set_mode(Python.tuple(window_height, window_width))
     pygame.display.set_caption("Conway's Game of life")
 
-    cell_height = window_height / grid.rows
-    cell_width = window_width / grid.cols
-    border_size = 1
-    cell_fill_colour = pygame.Color(cell_colour)
-    background_fill_colour = pygame.Color(background_colour)
+    var cell_height = window_height / grid.rows
+    var cell_width = window_width / grid.cols
+    var border_size = 1
+    var cell_fill_colour = pygame.Color(cell_colour)
+    var background_fill_colour = pygame.Color(background_colour)
 
-    running = True
+    var running = True
 
     while running:
         # Poll for events
-        event = pygame.event.poll()
+        var event = pygame.event.poll()
         if event.type == pygame.QUIT:
             # Quit if the window is closed
             running = False
@@ -57,10 +57,10 @@ def run_display(
         for row in range(grid.rows):
             for col in range(grid.cols):
                 if grid[row, col]:
-                    x = col * cell_width + border_size
-                    y = row * cell_height + border_size
-                    width = cell_width - border_size
-                    height = cell_height - border_size
+                    var x = col * cell_width + border_size
+                    var y = row * cell_height + border_size
+                    var width = cell_width - border_size
+                    var height = cell_height - border_size
                     pygame.draw.rect(
                         window,
                         cell_fill_colour,
@@ -76,6 +76,6 @@ def run_display(
     pygame.quit()
 
 
-def main():
-    start = Grid.random(128, 128)
+def main() raises:
+    var start = Grid.random(128, 128)
     run_display(start^)

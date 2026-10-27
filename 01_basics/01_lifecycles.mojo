@@ -17,22 +17,22 @@
 struct Balloon(Writable):
   var color: String
 
-  fn write_to(self, mut writer : Some[Writer]):
+  def write_to(self, mut writer : Some[Writer]):
     writer.write(String("a ", self.color, " balloon"))
 
-  fn __del__(deinit self):
+  def __deinit__(deinit self):
     print("Destroyed", String(self))
 
 def main():
   var a = Balloon("red")
   var b = Balloon("blue")
   print(a)
-  # a.__del__() runs here for "red" balloon
+  # a.__deinit__() runs here for "red" balloon
 
   a = Balloon("green")
   print(a.color)
-  # a.__del__() runs immediately because "green" balloon is never used
+  # a.__deinit__() runs immediately because "green" balloon is never used
 
   print(b)
-  # b.__del__() runs here for "blue" balloon
+  # b.__deinit__() runs here for "blue" balloon
 

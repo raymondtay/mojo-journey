@@ -1,0 +1,749 @@
+Starting Mojo verification...
+Running ./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo...
+/Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:40:27: error: no matching method in call to 'unsafe_store'
+      (y.unsafe_offset(i)).unsafe_store(0, va * vx + vy)
+      ~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~
+Imported from /Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:19:
+Mojo/stdlib/std/memory/pointer.mojo:1648:1: note: candidate not viable: value passed to 'self' cannot be converted from 'Pointer[Float32, origin]' to 'Pointer[Scalar[dtype], self.origin, address_space=self.address_space]'
+def unsafe_store[I: Indexer, dtype: DType, //, width: SIMDLength = 1, *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], offset: I, val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+Imported from /Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:19:
+Mojo/stdlib/std/memory/pointer.mojo:1694:1: note: candidate not viable: value passed to 'self' cannot be converted from 'Pointer[Float32, origin]' to 'Pointer[Scalar[dtype], self.origin, address_space=self.address_space]'
+def unsafe_store[dtype: DType, offset_type: DType, //, width: Int = Int(1), *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], offset: Scalar[offset_type], val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+Imported from /Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:19:
+Mojo/stdlib/std/memory/pointer.mojo:1740:1: note: candidate not viable: unexpected argument
+def unsafe_store[dtype: DType, //, width: SIMDLength = 1, *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+/Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:40:7: note: .mut of the first value is 'True' but the second value is 'mut'
+      (y.unsafe_offset(i)).unsafe_store(0, va * vx + vy)
+      ^
+/Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:45:19: warning: '__add__' is deprecated, use 'unsafe_offset' instead
+      var xi = (x + i).load[width=1]()
+                ~~^~~
+<unknown>:0: note: '__add__' declared here
+/Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:45:23: warning: 'load' is deprecated, use 'unsafe_load' instead
+      var xi = (x + i).load[width=1]()
+               ~~~~~~~^~~~~
+                       unsafe_load
+<unknown>:0: note: 'load' declared here
+/Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:46:19: warning: '__add__' is deprecated, use 'unsafe_offset' instead
+      var yi = (y + i).load[width=1]()
+                ~~^~~
+<unknown>:0: note: '__add__' declared here
+/Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:46:23: warning: 'load' is deprecated, use 'unsafe_load' instead
+      var yi = (y + i).load[width=1]()
+               ~~~~~~~^~~~~
+                       unsafe_load
+<unknown>:0: note: 'load' declared here
+/Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:47:10: warning: '__add__' is deprecated, use 'unsafe_offset' instead
+      (y + i).store[width=1](a * xi + yi)
+       ~~^~~
+<unknown>:0: note: '__add__' declared here
+/Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:47:14: error: no matching method in call to 'store'
+      (y + i).store[width=1](a * xi + yi)
+      ~~~~~~~^~~~~~
+Imported from /Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:19:
+Mojo/stdlib/std/memory/pointer.mojo:1798:1: note: candidate not viable: missing required argument: 'val'
+def store[I: Indexer, dtype: DType, //, width: SIMDLength = 1, *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], offset: I, val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+Imported from /Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:19:
+Mojo/stdlib/std/memory/pointer.mojo:1823:1: note: candidate not viable: missing required argument: 'val'
+def store[dtype: DType, offset_type: DType, //, width: Int = Int(1), *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], offset: Scalar[offset_type], val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+Imported from /Users/raymondtay/Projects/mojo-journey/./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo:19:
+Mojo/stdlib/std/memory/pointer.mojo:1848:1: note: candidate not viable: value passed to 'self' cannot be converted from 'Pointer[Float32, origin]' to 'Pointer[Scalar[dtype], self.origin, address_space=self.address_space]'
+def store[dtype: DType, //, width: SIMDLength = 1, *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo
+-------------------
+Running ./01_gpu_basics/00_scalar_addition.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/00_scalar_addition.mojo:4:10: error: unable to locate module 'gpu'
+from std.gpu import DeviceContext
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/00_scalar_addition.mojo:4:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu import DeviceContext
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/00_scalar_addition.mojo:5:10: error: unable to locate module 'gpu'
+from std.gpu import block_dim, block_idx, thread_idx
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/00_scalar_addition.mojo:5:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu import block_dim, block_idx, thread_idx
+         ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_gpu_basics/00_scalar_addition.mojo
+-------------------
+Running ./01_gpu_basics/vector_addition.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/vector_addition.mojo:7:1: error: expected '=' after comptime declaration
+comptime let block_size = 256
+^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/vector_addition.mojo:1:10: error: unable to locate module 'gpu'
+from std.gpu import DeviceContext
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/vector_addition.mojo:1:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu import DeviceContext
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/vector_addition.mojo:2:10: error: unable to locate module 'gpu'
+from std.gpu import block_dim, block_idx, thread_idx
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/vector_addition.mojo:2:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu import block_dim, block_idx, thread_idx
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/vector_addition.mojo:3:38: error: package 'sys' does not contain 'has_apple_gpu_accelerator'
+from std.sys import has_accelerator, has_apple_gpu_accelerator
+                                     ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/vector_addition.mojo:4:10: error: unable to locate module 'layout'
+from std.layout import Layout, LayoutTensor
+         ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_gpu_basics/vector_addition.mojo
+-------------------
+Running ./01_gpu_basics/00_print_threads.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/00_print_threads.mojo:1:44: error: package 'sys' does not contain 'has_apple_gpu_accelerator'
+from std.sys import exit, has_accelerator, has_apple_gpu_accelerator
+                                           ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/00_print_threads.mojo:3:10: error: unable to locate module 'gpu'
+from std.gpu import DeviceContext
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/00_print_threads.mojo:3:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu import DeviceContext
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/00_print_threads.mojo:4:10: error: unable to locate module 'gpu'
+from std.gpu import block_dim, block_idx, global_idx, grid_dim, thread_idx
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/00_print_threads.mojo:4:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu import block_dim, block_idx, global_idx, grid_dim, thread_idx
+         ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_gpu_basics/00_print_threads.mojo
+-------------------
+Running ./01_gpu_basics/basic_layouts.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_gpu_basics/basic_layouts.mojo:1:10: error: unable to locate module 'layout'
+from std.layout import IntTuple, Layout, print_layout
+         ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_gpu_basics/basic_layouts.mojo
+-------------------
+Running ./test_pointer_methods.mojo...
+/Users/raymondtay/Projects/mojo-journey/./test_pointer_methods.mojo:2:13: warning: `alloc` without a `Layout` is deprecated, use the `Layout`-based `alloc` instead; as a temporary migration step, use `unsafe_alloc`
+    var p = alloc[Int](1)
+            ^~~~~
+<unknown>:0: note: 'alloc' declared here
+/Users/raymondtay/Projects/mojo-journey/./test_pointer_methods.mojo:5:10: error: 'Pointer[Int, MutUntrackedOrigin]' value has no attribute 'init_pointee'
+        p.init_pointee(10)
+        ~^
+/Users/raymondtay/Projects/mojo-journey/./test_pointer_methods.mojo:9:21: error: expected ')' in call argument list
+        p.store((10)
+                    ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./test_pointer_methods.mojo
+-------------------
+Running ./tests/test_saxpy.mojo...
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:19:21: warning: '__add__' is deprecated, use 'unsafe_offset' instead
+        var vx = (x + i).load[width=W, alignment=ALIGN]()
+                  ~~^~~
+<unknown>:0: note: '__add__' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:19:25: warning: 'load' is deprecated, use 'unsafe_load' instead
+        var vx = (x + i).load[width=W, alignment=ALIGN]()
+                 ~~~~~~~^~~~~
+                         unsafe_load
+<unknown>:0: note: 'load' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:20:21: warning: '__add__' is deprecated, use 'unsafe_offset' instead
+        var vy = (y + i).load[width=W, alignment=ALIGN]()
+                  ~~^~~
+<unknown>:0: note: '__add__' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:20:25: warning: 'load' is deprecated, use 'unsafe_load' instead
+        var vy = (y + i).load[width=W, alignment=ALIGN]()
+                 ~~~~~~~^~~~~
+                         unsafe_load
+<unknown>:0: note: 'load' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:21:12: warning: '__add__' is deprecated, use 'unsafe_offset' instead
+        (y + i).store[width=W, alignment=ALIGN](va * vx + vy)
+         ~~^~~
+<unknown>:0: note: '__add__' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:21:16: error: no matching method in call to 'store'
+        (y + i).store[width=W, alignment=ALIGN](va * vx + vy)
+        ~~~~~~~^~~~~~
+Imported from /Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:1:
+Mojo/stdlib/std/memory/pointer.mojo:1798:1: note: candidate not viable: missing required argument: 'val'
+def store[I: Indexer, dtype: DType, //, width: SIMDLength = 1, *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], offset: I, val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+Imported from /Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:1:
+Mojo/stdlib/std/memory/pointer.mojo:1823:1: note: candidate not viable: missing required argument: 'val'
+def store[dtype: DType, offset_type: DType, //, width: Int = Int(1), *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], offset: Scalar[offset_type], val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+Imported from /Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:1:
+Mojo/stdlib/std/memory/pointer.mojo:1848:1: note: candidate not viable: value passed to 'self' cannot be converted from 'Pointer[Float32, origin]' to 'Pointer[Scalar[dtype], self.origin, address_space=self.address_space]'
+def store[dtype: DType, //, width: SIMDLength = 1, *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:26:21: warning: '__add__' is deprecated, use 'unsafe_offset' instead
+        var xi = (x + i).load[width=1]()
+                  ~~^~~
+<unknown>:0: note: '__add__' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:26:25: warning: 'load' is deprecated, use 'unsafe_load' instead
+        var xi = (x + i).load[width=1]()
+                 ~~~~~~~^~~~~
+                         unsafe_load
+<unknown>:0: note: 'load' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:27:21: warning: '__add__' is deprecated, use 'unsafe_offset' instead
+        var yi = (y + i).load[width=1]()
+                  ~~^~~
+<unknown>:0: note: '__add__' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:27:25: warning: 'load' is deprecated, use 'unsafe_load' instead
+        var yi = (y + i).load[width=1]()
+                 ~~~~~~~^~~~~
+                         unsafe_load
+<unknown>:0: note: 'load' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:28:12: warning: '__add__' is deprecated, use 'unsafe_offset' instead
+        (y + i).store[width=1](a * xi + yi)
+         ~~^~~
+<unknown>:0: note: '__add__' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:28:16: error: no matching method in call to 'store'
+        (y + i).store[width=1](a * xi + yi)
+        ~~~~~~~^~~~~~
+Imported from /Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:1:
+Mojo/stdlib/std/memory/pointer.mojo:1798:1: note: candidate not viable: missing required argument: 'val'
+def store[I: Indexer, dtype: DType, //, width: SIMDLength = 1, *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], offset: I, val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+Imported from /Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:1:
+Mojo/stdlib/std/memory/pointer.mojo:1823:1: note: candidate not viable: missing required argument: 'val'
+def store[dtype: DType, offset_type: DType, //, width: Int = Int(1), *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], offset: Scalar[offset_type], val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+Imported from /Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:1:
+Mojo/stdlib/std/memory/pointer.mojo:1848:1: note: candidate not viable: value passed to 'self' cannot be converted from 'Pointer[Float32, origin]' to 'Pointer[Scalar[dtype], self.origin, address_space=self.address_space]'
+def store[dtype: DType, //, width: SIMDLength = 1, *, alignment: Int = align_of[dtype](), volatile: Bool = False, non_temporal: Bool = False](self: Pointer[Scalar[dtype], address_space=self.address_space], val: SIMD[dtype, width]) where identical(T, Scalar[dtype]) and identical(address_space, self.address_space) and identical(mut, True) and identical(origin, self.origin) and identical(origin_of(origin), origin_of(self.origin))    # note - synthetic signature
+^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_saxpy.mojo:39:54: error: 'Pointer[Float32, _]' is not concrete, use '[]' to bind missing parameters
+def alloc_and_fill(n: Int, value: Float32) -> Pointer[Scalar[DType.float32], _]:
+                                                     ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./tests/test_saxpy.mojo
+-------------------
+Running ./tests/test_collections.mojo...
+/Users/raymondtay/Projects/mojo-journey/./tests/test_collections.mojo:5:55: error: unexpected token in expression
+struct GenericArray[ElementType: Copyable & Movable & ]:
+                                                      ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./tests/test_collections.mojo
+-------------------
+Running ./tests/test_grid.mojo...
+/Users/raymondtay/Projects/mojo-journey/./tests/test_grid.mojo:83:24: error: no matching function in initialization
+    assert_equal(String(g), "   \n   ")
+                 ~~~~~~^~~
+Mojo/stdlib/std/collections/string/string.mojo:309:1: note: candidate not viable: unexpected argument
+def __init__(out self)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:319:1: note: candidate not viable: missing required argument: 'capacity_bytes'
+def __init__(out self, *, capacity_bytes: Int)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:336:1: note: candidate not viable: value passed to 'data' cannot be converted from 'Grid' to 'StaticString'
+def __init__(out self, data: StaticString, /)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:357:1: note: candidate not viable: value passed to 'data' cannot be converted from 'Grid' to 'StringLiteral[data.value]', it depends on an unresolved parameter 'data.value'
+def __init__(out self, data: StringLiteral, /)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:373:1: note: candidate not viable: value passed to 'tstring' cannot be converted from 'Grid' to 'TString[tstring.origins, tstring.array_origin]', it depends on an unresolved parameter 'origin_of(tstring.origins)'
+def __init__(out self, tstring: TString)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:384:1: note: candidate not viable: missing required argument: 'unsafe_from_utf8'
+def __init__(out self, *, unsafe_from_utf8: Span[UInt8])    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:410:1: note: candidate not viable: missing required argument: 'from_utf8_lossy'
+def __init__(out self, *, from_utf8_lossy: Span[UInt8])    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:445:1: note: candidate not viable: missing required argument: 'from_utf8'
+def __init__(out self, *, from_utf8: Span[UInt8])    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:466:1: note: candidate not viable: an element of 'args' with type 'Grid' does not conform to trait 'Writable'; either prove the conformance with 'conforms_to', or add conformance
+def __init__[*Ts: Writable](out self, *args: *Ts.values, *, sep: StaticString = "", end: StaticString = "")    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:547:1: note: candidate not viable: missing required argument: 'unsafe_uninit_length' (6 more notes omitted.)
+def __init__(out self, *, unsafe_uninit_length: Int)    # note - synthetic signature
+^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_grid.mojo:90:24: error: no matching function in initialization
+    assert_equal(String(g), "* \n *")
+                 ~~~~~~^~~
+Mojo/stdlib/std/collections/string/string.mojo:309:1: note: candidate not viable: unexpected argument
+def __init__(out self)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:319:1: note: candidate not viable: missing required argument: 'capacity_bytes'
+def __init__(out self, *, capacity_bytes: Int)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:336:1: note: candidate not viable: value passed to 'data' cannot be converted from 'Grid' to 'StaticString'
+def __init__(out self, data: StaticString, /)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:357:1: note: candidate not viable: value passed to 'data' cannot be converted from 'Grid' to 'StringLiteral[data.value]', it depends on an unresolved parameter 'data.value'
+def __init__(out self, data: StringLiteral, /)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:373:1: note: candidate not viable: value passed to 'tstring' cannot be converted from 'Grid' to 'TString[tstring.origins, tstring.array_origin]', it depends on an unresolved parameter 'origin_of(tstring.origins)'
+def __init__(out self, tstring: TString)    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:384:1: note: candidate not viable: missing required argument: 'unsafe_from_utf8'
+def __init__(out self, *, unsafe_from_utf8: Span[UInt8])    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:410:1: note: candidate not viable: missing required argument: 'from_utf8_lossy'
+def __init__(out self, *, from_utf8_lossy: Span[UInt8])    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:445:1: note: candidate not viable: missing required argument: 'from_utf8'
+def __init__(out self, *, from_utf8: Span[UInt8])    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:466:1: note: candidate not viable: an element of 'args' with type 'Grid' does not conform to trait 'Writable'; either prove the conformance with 'conforms_to', or add conformance
+def __init__[*Ts: Writable](out self, *args: *Ts.values, *, sep: StaticString = "", end: StaticString = "")    # note - synthetic signature
+^
+Mojo/stdlib/std/collections/string/string.mojo:547:1: note: candidate not viable: missing required argument: 'unsafe_uninit_length' (6 more notes omitted.)
+def __init__(out self, *, unsafe_uninit_length: Int)    # note - synthetic signature
+^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_grid.mojo:49:25: error: cannot declare 'num_neighbours' without a contextual type from its initializer
+                    var num_neighbours == 2 or num_neighbours == 3
+                        ^~~~~~~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./tests/test_grid.mojo
+-------------------
+Running ./tests/test_simd_ops.mojo...
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:37:21: error: invalid call to 'slice': value passed to 'x' cannot be converted from 'SIMD[dtype, length]' to 'SIMD[dtype, size]', it depends on an unresolved parameter 'size'
+    var lhs = slice(x, 0)
+              ~~~~~ ^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:20:5: note: function declared here
+def slice[
+    ^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:38:21: error: invalid call to 'slice': value passed to 'x' cannot be converted from 'SIMD[dtype, length]' to 'SIMD[dtype, size]', it depends on an unresolved parameter 'size'
+    var rhs = slice(x, half_size)
+              ~~~~~ ^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:20:5: note: function declared here
+def slice[
+    ^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:70:30: error: invalid call to 'concat': unexpected parameter
+    var result = concat[DType.int32, 2, 2](lhs, rhs)
+                 ~~~~~~ ~~~~~^~~~~~
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:4:5: note: function declared here
+def concat[
+    ^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:79:51: error: use of unknown declaration 'rhs'; did you mean 'lhs'?
+    var result = concat[DType.float32, 4, 4](lhs, rhs)
+                                                  ^~~
+                                                  lhs
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:86:51: error: use of unknown declaration 'rhs'; did you mean 'lhs'?
+    var result = concat[DType.float32, 2, 2](lhs, rhs)
+                                                  ^~~
+                                                  lhs
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:93:40: error: use of unknown declaration 'x'
+    var result = slice[DType.int32, 4](x, 0)
+                                       ^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_simd_ops.mojo:99:40: error: use of unknown declaration 'x'
+    var result = slice[DType.int32, 4](x, 2)
+                                       ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./tests/test_simd_ops.mojo
+-------------------
+Running ./tests/test_particles.mojo...
+/Users/raymondtay/Projects/mojo-journey/./tests/test_particles.mojo:30:13: error: 'None' has no attributes
+        self.x = copy.x
+        ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_particles.mojo:31:13: error: 'None' has no attributes
+        self.y = copy.y
+        ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_particles.mojo:32:13: error: 'None' has no attributes
+        self.z = copy.z
+        ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_particles.mojo:33:13: error: 'None' has no attributes
+        self.vx = copy.vx
+        ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_particles.mojo:34:13: error: 'None' has no attributes
+        self.vy = copy.vy
+        ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_particles.mojo:35:13: error: 'None' has no attributes
+        self.vz = copy.vz
+        ~~~~^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./tests/test_particles.mojo
+-------------------
+Running ./tests/test_pointers.mojo...
+/Users/raymondtay/Projects/mojo-journey/./tests/test_pointers.mojo:63:21: warning: `alloc` without a `Layout` is deprecated, use the `Layout`-based `alloc` instead; as a temporary migration step, use `unsafe_alloc`
+    var float_ptr = alloc[Float64](6)
+                    ^~~~~
+<unknown>:0: note: 'alloc' declared here
+/Users/raymondtay/Projects/mojo-journey/./tests/test_pointers.mojo:65:54: error: expected ')' in call argument list
+         float_ptr .unsafe_offset(offset).store((0.0)
+                                                     ^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_pointers.mojo:9:9: error: implicit declaration of 'attributesDict' is not allowed; add 'var' to declare a new name
+        attributesDict: Dict[String, String] = {}
+        ^~~~~~~~~~~~~~
+        var 
+/Users/raymondtay/Projects/mojo-journey/./tests/test_pointers.mojo:13:13: error: 'None' has no attributes
+        self.attributes = copy.attributes
+        ~~~~^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./tests/test_pointers.mojo
+-------------------
+Running ./tests/test_basics.mojo...
+/Users/raymondtay/Projects/mojo-journey/./tests/test_basics.mojo:31:16: error: 'VariadicPack[False, *ArgTypes]' does not implement the '__iter__' method
+    for arg in args:
+               ^~~~
+/Users/raymondtay/Projects/mojo-journey/./tests/test_basics.mojo:77:9: error: invalid redefinition of 'obj'
+    var obj = ImmovableObject(name^)
+        ^
+/Users/raymondtay/Projects/mojo-journey/./tests/test_basics.mojo:76:51: note: previous definition here
+def create_immovable_object(var name: String, out obj: ImmovableObject):
+                                                  ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./tests/test_basics.mojo
+-------------------
+Running ./02_advanced/01_rebind.mojo...
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: module does not define a `main` function
+FAILED ./02_advanced/01_rebind.mojo
+-------------------
+Running ./02_advanced/01_pointers.mojo...
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_pointers.mojo:66:19: warning: `alloc` without a `Layout` is deprecated, use the `Layout`-based `alloc` instead; as a temporary migration step, use `unsafe_alloc`
+  var float_ptr = alloc[Float64](6)
+                  ^~~~~
+<unknown>:0: note: 'alloc' declared here
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_pointers.mojo:68:49: error: expected ')' in call argument list
+     float_ptr.unsafe_offset(offset).store((0.0)
+                                                ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_pointers.mojo:53:9: error: implicit declaration of 'attributesDict' is not allowed; add 'var' to declare a new name
+        attributesDict: Dict[String, String] = {}
+        ^~~~~~~~~~~~~~
+        var 
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_pointers.mojo:57:13: error: 'None' has no attributes
+        self.attributes = copy.attributes
+        ~~~~^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./02_advanced/01_pointers.mojo
+-------------------
+Running ./02_advanced/01_tiled_matmul.mojo...
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:43:10: error: unable to locate module 'gpu'
+from std.gpu.sync import barrier
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:43:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu.sync import barrier
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:43:10: error: 'gpu' is a module, not a package; it has no nested module or package 'sync'
+from std.gpu.sync import barrier
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:44:10: error: unable to locate module 'gpu'
+from std.gpu import DeviceContext
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:44:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu import DeviceContext
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:45:10: error: unable to locate module 'gpu'
+from std.gpu import thread_idx, block_idx
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:45:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu import thread_idx, block_idx
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:46:10: error: unable to locate module 'gpu'
+from std.gpu.memory import AddressSpace
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:46:10: note: many stdlib items recently moved to the `max` package, try `from max.<module>`
+from std.gpu.memory import AddressSpace
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:46:10: error: 'gpu' is a module, not a package; it has no nested module or package 'memory'
+from std.gpu.memory import AddressSpace
+         ^
+/Users/raymondtay/Projects/mojo-journey/./02_advanced/01_tiled_matmul.mojo:49:10: error: unable to locate module 'layout'
+from std.layout import Layout, LayoutTensor
+         ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./02_advanced/01_tiled_matmul.mojo
+-------------------
+Running ./02_advanced/01_parameterization.mojo...
+<unknown>:0: error: SIMD vector length must be a power of two between 1 and 2^15, found '!kgen.simd<0, f32>'
+<unknown>:0: note: see current operation: %2 = "kgen.param.constant"() <{value = #kgen.simd_splat<#kgen<simd "0"> : !kgen.scalar<f32>> : !kgen.simd<0, f32>}> : () -> !kgen.simd<0, f32>
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to run the pass manager
+FAILED ./02_advanced/01_parameterization.mojo
+-------------------
+Running ./explore_pointer_v4.mojo...
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v4.mojo:6:13: warning: `alloc` without a `Layout` is deprecated, use the `Layout`-based `alloc` instead; as a temporary migration step, use `unsafe_alloc`
+    var p = alloc[S](1)
+            ^~~~~
+<unknown>:0: note: 'alloc' declared here
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v4.mojo:7:6: warning: positional `__getitem__` is deprecated, use `unsafe_offset=` instead
+    p[0] = S(x=10)
+    ~^~~
+<unknown>:0: note: '__getitem__' declared here
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v4.mojo:8:6: warning: 'free' is deprecated, use 'unsafe_free' instead
+    p.free()
+    ~^~~~~
+      unsafe_free
+<unknown>:0: note: 'free' declared here
+PASSED ./explore_pointer_v4.mojo
+-------------------
+Running ./03_applications/AoSoA/src/AoS_SoA.mojo...
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:91:19: error: expected ')' in call argument list
+            var x = Float32(i),
+                  ^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:13:11: error: 'None' has no attributes
+      self.x = copy.x
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:14:11: error: 'None' has no attributes
+      self.y = copy.y
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:15:11: error: 'None' has no attributes
+      self.z = copy.z
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:16:11: error: 'None' has no attributes
+      self.vx = copy.vx
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:17:11: error: 'None' has no attributes
+      self.vy = copy.vy
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:18:11: error: 'None' has no attributes
+      self.vz = copy.vz
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:22:5: error: cannot synthesize implicit copy constructor because field 'x' has non-implicitly-copyable type 'List[Float32]'
+    var x: List[Float32]
+    ^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:38:11: error: 'None' has no attributes
+      self.x = copy.x
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:39:11: error: 'None' has no attributes
+      self.y = copy.y
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:40:11: error: 'None' has no attributes
+      self.z = copy.z
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:41:11: error: 'None' has no attributes
+      self.vx = copy.vx
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:42:11: error: 'None' has no attributes
+      self.vy = copy.vy
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/./03_applications/AoSoA/src/AoS_SoA.mojo:43:11: error: 'None' has no attributes
+      self.vz = copy.vz
+      ~~~~^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./03_applications/AoSoA/src/AoS_SoA.mojo
+-------------------
+Running ./01_layouts/1d_layouts.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_layouts/1d_layouts.mojo:1:10: error: unable to locate module 'layout'
+from std.layout import Layout, IntTuple, print_layout
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_layouts/1d_layouts.mojo:11:8: warning: doc string summary should end with a period '.', exclamation mark '!', question mark '?', or backtick '`', but this ends with '+'
+    """
+       ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_layouts/1d_layouts.mojo
+-------------------
+Running ./01_layouts/2d_layouts.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_layouts/2d_layouts.mojo:1:10: error: unable to locate module 'layout'
+from std.layout import Layout, IntTuple, print_layout
+         ^
+/Users/raymondtay/Projects/mojo-journey/./01_layouts/2d_layouts.mojo:5:8: warning: doc string summary should end with a period '.', exclamation mark '!', question mark '?', or backtick '`', but this ends with '+'
+    """Column-major representation.
+       ^
+/Users/raymondtay/Projects/mojo-journey/./01_layouts/2d_layouts.mojo:26:8: warning: doc string summary should end with a period '.', exclamation mark '!', question mark '?', or backtick '`', but this ends with '+'
+    """Row-major representation.
+       ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_layouts/2d_layouts.mojo
+-------------------
+Running ./explore_pointer_v3.mojo...
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v3.mojo:4:13: warning: `alloc` without a `Layout` is deprecated, use the `Layout`-based `alloc` instead; as a temporary migration step, use `unsafe_alloc`
+    var p = alloc[S](1)
+            ^~~~~
+<unknown>:0: note: 'alloc' declared here
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v3.mojo:5:6: warning: positional `__getitem__` is deprecated, use `unsafe_offset=` instead
+    p[0] = S(x=10)
+    ~^~~
+<unknown>:0: note: '__getitem__' declared here
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v3.mojo:5:13: error: no matching function in initialization
+    p[0] = S(x=10)
+           ~^~~~~~
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v3.mojo:1:1: note: candidate not viable: missing required argument: 'move'
+def __init__(out self, *, deinit move: Self)    # note - generated function
+^
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v3.mojo:1:1: note: candidate not viable: missing required argument: 'copy'
+def __init__(out self, *, copy: Self)    # note - generated function
+^
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v3.mojo:6:6: warning: 'free' is deprecated, use 'unsafe_free' instead
+    p.free()
+    ~^~~~~
+      unsafe_free
+<unknown>:0: note: 'free' declared here
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./explore_pointer_v3.mojo
+-------------------
+Running ./explore_pointer_v2.mojo...
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v2.mojo:2:13: warning: `alloc` without a `Layout` is deprecated, use the `Layout`-based `alloc` instead; as a temporary migration step, use `unsafe_alloc`
+    var p = alloc[Int](1)
+            ^~~~~
+<unknown>:0: note: 'alloc' declared here
+/Users/raymondtay/Projects/mojo-journey/./explore_pointer_v2.mojo:3:6: warning: 'store' is deprecated, use 'unsafe_store' instead
+    p.store(10) # this worked before
+    ~^~~~~~
+      unsafe_store
+<unknown>:0: note: 'store' declared here
+PASSED ./explore_pointer_v2.mojo
+-------------------
+Running ./01_basics/01_working_with_origins.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_origins.mojo:16:35: error: expected ')' in argument list
+  def __getitem__(ref self, index raises:
+                                  ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_working_with_origins.mojo
+-------------------
+Running ./01_basics/01_helloworld.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_helloworld.mojo:26:38: error: cannot call function that may raise in a context that cannot raise
+    var pygame = Python.import_module("pygame")
+                 ~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_helloworld.mojo:26:38: note: try surrounding the call in a 'try' block
+    var pygame = Python.import_module("pygame")
+                                     ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_helloworld.mojo:17:5: note: or mark surrounding function as 'raises'
+def run_display(
+    ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_helloworld.mojo
+-------------------
+Running ./01_basics/gridv1.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/gridv1.mojo:84:25: error: cannot declare 'num_neighbours' without a contextual type from its initializer
+                    var num_neighbours == 2 or num_neighbours == 3
+                        ^~~~~~~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/gridv1.mojo
+-------------------
+Running ./01_basics/01_proglang.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_proglang.mojo:51:27: error: cannot use a dynamic value in type parameter
+        total += Int(args[i])
+                          ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_proglang.mojo:67:34: error: cannot call function that may raise in a context that cannot raise
+    var np = Python.import_module("numpy")
+             ~~~~~~~~~~~~~~~~~~~~^~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_proglang.mojo:67:34: note: try surrounding the call in a 'try' block
+    var np = Python.import_module("numpy")
+                                 ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_proglang.mojo:55:5: note: or mark surrounding function as 'raises'
+def main():
+    ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_proglang.mojo
+-------------------
+Running ./01_basics/01_working_with_traits.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:5:1: error: statement indentation must match the rest of the block; adjust to align
+@fieldwise_init
+^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:12:1: error: statement indentation must match the rest of the block; adjust to align
+@fieldwise_init
+^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:19:1: error: statement indentation must match the rest of the block; adjust to align
+def make_it_quack[DuckType : Quackable](some_duck: DuckType) :
+^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:22:1: error: statement indentation must match the rest of the block; adjust to align
+def make_it_quack2(some_duck: Some[Quackable]) :
+^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:25:1: error: statement indentation must match the rest of the block; adjust to align
+def quack_n_go[tpe: Quackable & Flyable](object: tpe):
+^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:34:1: error: statement indentation must match the rest of the block; adjust to align
+struct MyStack[type: Copyable & Movable](Stacklike):
+^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:58:1: error: statement indentation must match the rest of the block; adjust to align
+def main():
+^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:1:11: error: argument type must be specified
+  def fly(self):
+          ^~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:3:13: error: argument type must be specified
+  def quack(self):
+            ^~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:6:23: error: use of unknown declaration 'Quackable'
+struct Duck(Copyable, Quackable, Movable, Flyable):
+                      ^~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:13:29: error: use of unknown declaration 'Quackable'
+struct StealthCow(Copyable, Quackable, Movable, Flyable):
+                            ^~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:19:30: error: use of unknown declaration 'Quackable'
+def make_it_quack[DuckType : Quackable](some_duck: DuckType) :
+                             ^~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:22:36: error: use of unknown declaration 'Quackable'
+def make_it_quack2(some_duck: Some[Quackable]) :
+                                   ^~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:25:21: error: use of unknown declaration 'Quackable'
+def quack_n_go[tpe: Quackable & Flyable](object: tpe):
+                    ^~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:25:33: error: use of unknown declaration 'Flyable'
+def quack_n_go[tpe: Quackable & Flyable](object: tpe):
+                                ^~~~~~~
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:34:31: warning: redundant trait composition: 'Copyable' already implies 'Movable'
+struct MyStack[type: Copyable & Movable](Stacklike):
+                              ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_working_with_traits.mojo:34:42: error: use of unknown declaration 'Stacklike'
+struct MyStack[type: Copyable & Movable](Stacklike):
+                                         ^~~~~~~~~
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_working_with_traits.mojo
+-------------------
+Running ./01_basics/01_error_handling.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_error_handling.mojo:2:12: error: expected ')' in argument list
+def incr(n raises:
+           ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_error_handling.mojo
+-------------------
+Running ./01_basics/01_types.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_types.mojo:5:6: error: unable to locate module 'utils'
+from utils.numerics import max_finite, min_finite
+     ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_types.mojo:25:9: error: invalid redefinition of 'vc'
+    var vc = va * vb
+        ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_types.mojo:18:5: note: previous definition here
+def r[
+    ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_types.mojo:50:9: error: invalid redefinition of 'vec3'
+    var vec3 = r[4](vec1, vec2)
+        ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_types.mojo:44:9: note: previous definition here
+    var vec3: SIMD[DType.int8, 4]
+        ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_types.mojo
+-------------------
+Running ./01_basics/01_ctx_mgr.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_ctx_mgr.mojo:68:12: error: cannot implicitly convert 'Int' value to 'None' in return value
+    return n
+           ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_ctx_mgr.mojo:82:21: error: invalid call to 'print': an element of 'values' with type 'None' does not conform to trait 'Writable'; either prove the conformance with 'conforms_to', or add conformance
+      print("j = ", j)
+      ~~~~~         ^
+Imported from /Users/raymondtay/Projects/mojo-journey/./01_basics/01_ctx_mgr.mojo:17:
+Mojo/stdlib/std/io/io.mojo:279:1: note: function declared here
+def print[*Ts: Writable](*values: *Ts.values, *, sep: StringSpan = " ", end: StringSpan = "\n", flush: Bool = False, var file: RawFileDescriptor = stdout)    # note - synthetic signature
+^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_ctx_mgr.mojo
+-------------------
+Running ./01_basics/01_namedresults.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_namedresults.mojo:2:1: error: expected '=' after comptime declaration
+comptime let G: Int = 42
+^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_namedresults.mojo
+-------------------
+Running ./01_basics/01_advanced_traits.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_advanced_traits.mojo:45:21: error: unexpected token in expression
+def repeat[MsgType: , //, count : Int](msg: MsgType):
+                    ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_advanced_traits.mojo:50:55: error: unexpected token in expression
+struct GenericArray[ElementType: Copyable & Movable & ]:
+                                                      ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_advanced_traits.mojo
+-------------------
+Running ./01_basics/01_lifecycles.mojo...
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_lifecycles.mojo:23:7: warning: '__del__' is deprecated; use '__deinit__'
+  def __del__(deinit self):
+      ^~~~~~~
+      __deinit__
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_lifecycles.mojo:32:7: error: invalid redefinition of 'a'
+  var a = Balloon("green")
+      ^
+/Users/raymondtay/Projects/mojo-journey/./01_basics/01_lifecycles.mojo:27:7: note: previous definition here
+  var a = Balloon("red")
+      ^
+/Users/raymondtay/Projects/mojo-journey/.pixi/envs/default/bin/mojo: error: failed to parse the provided Mojo source module
+FAILED ./01_basics/01_lifecycles.mojo
+-------------------
+Verification complete.

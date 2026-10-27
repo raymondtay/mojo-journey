@@ -1,14 +1,16 @@
-from math import iota
-from sys import exit, has_accelerator
+from std.math import iota
+from std.sys import exit, has_accelerator
 
-from gpu.host import DeviceContext
-from gpu import block_dim, block_idx, thread_idx
+from std.memory import MutPointer
+
+from max.gpu.host import DeviceContext
+from max.gpu import block_dim, block_idx, thread_idx
 
 comptime num_elements = 20
 
-fn scalar_add(
-    vector: UnsafePointer[Float32, MutAnyOrigin],
-    size: Int,
+def scalar_add(
+    vector: MutPointer[Float32, MutAnyOrigin],
+    size_dev: Int32,
     scalar: Float32
     ):
   """
@@ -19,7 +21,8 @@ fn scalar_add(
 
   Args: 
   vector: Pointer to the input vector
-  size: Number of elements in the vector.
+  size_dev: Number of elements in the vector (Mojo 1.2: `Int` is not
+    `DevicePassable`, so kernel arguments use fixed-width integers).
   scalar: Scalar to add to the vector, element-wise.
   """
 
@@ -28,26 +31,28 @@ fn scalar_add(
   # block_idx.x : the index of the current thread block.
   # block_dim.x : number of threads per block.
   # thread_idx.x : the index of the current thread within its block.
-  idx = block_idx.x * block_dim.x + thread_idx.x
+  var idx = block_idx.x * block_dim.x + thread_idx.x
 
   # Bounds checking: ensure we don't access memory beyond the vector size.
   # In other words, we perform the kernel operation within the bounds of the
   # vector w/o triggering a segmentation fault.
-  if idx < UInt(size):
-    vector[idx] += scalar
+  # Mojo 1.2: the index builtins are `Int`, and pointer indexing is spelled
+  # `ptr[unsafe_offset=i]` (positional `ptr[i]` is deprecated).
+  var size = Int(size_dev)
+  if idx < size:
+    vector[unsafe_offset=idx] += scalar
 
 
-def main():
-  @parameter
-  if not has_accelerator():
+def main() raises:
+  comptime if not has_accelerator():
     print("No GPUs detected")
     exit(0)
   else:
     # initialize GPU context for device 0 (default GPU device).
-    ctx = DeviceContext()
+    var ctx = DeviceContext()
 
     # Create a buffer in host *CPU* memory to store the input data
-    host_buffer = ctx.enqueue_create_host_buffer[DType.float32](num_elements)
+    var host_buffer = ctx.enqueue_create_host_buffer[DType.float32](num_elements)
 
     # Wait for buffer creation to complete.
     ctx.synchronize()
@@ -58,13 +63,15 @@ def main():
 
     # Create a buffer in device (GPU) memory to store the results of our
     # transformed data.
-    device_buffer = ctx.enqueue_create_buffer[DType.float32](num_elements)
+    var device_buffer = ctx.enqueue_create_buffer[DType.float32](num_elements)
 
     # Copy the data from the CPU memory to the GPU memory.
     ctx.enqueue_copy(src_buf=host_buffer, dst_buf=device_buffer)
 
     # Compile the function
-    scalar_add_kernel = ctx.compile_function[scalar_add, scalar_add]()
+    # Mojo 1.2: the kernel is passed once (the old `[kernel, kernel]` form of the
+    # type-checked API is gone).
+    var scalar_add_kernel = ctx.compile_function[scalar_add]()
 
     # Launched the compiled kernel function with the following arguments:
     # - device_buffer: gpu memory containing our payload
@@ -78,7 +85,7 @@ def main():
     ctx.enqueue_function(
         scalar_add_kernel,
         device_buffer,
-        num_elements,
+        Int32(num_elements),
         Float32(3.142),
         grid_dim=1,
         block_dim=num_elements

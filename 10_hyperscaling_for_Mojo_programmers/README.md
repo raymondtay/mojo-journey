@@ -54,40 +54,42 @@ earlier, then we should see instructions like `zmm` and `vmfadd` in the assembly
 code. Checkout the code, in Mojo:
 
 ```mojo
-# Use Mojo compiler version 0.26
-from memory import UnsafePointer
-from sys import align_of
-from builtin.simd import SIMD
-from compile import compile_info
+# Mojo 1.2
+from std.memory import MutPointer
+from std.sys import align_of
+from std.compile import compile_info
 
-fn saxpy16(
-    y: UnsafePointer[mut=True, Scalar[DType.float32]],
-    x: UnsafePointer[mut=True, Scalar[DType.float32]],
+# Mojo 1.2: `UnsafePointer` is deprecated in favour of `Pointer`
+# (`MutPointer` = mutable `Pointer`), whose unsafe operations are spelled
+# `unsafe_offset` / `unsafe_load` / `unsafe_store`. `SIMD` is in the prelude.
+def saxpy16(
+    y: MutPointer[Scalar[DType.float32], MutAnyOrigin],
+    x: MutPointer[Scalar[DType.float32], MutAnyOrigin],
     n: Int,
     a: Float32,
 ):
     comptime W = 16
-    va = SIMD[DType.float32, W](a)
+    var va = SIMD[DType.float32, W](a)
 
     # Alignment for vector load/store (safe choice for 16x f32)
     comptime ALIGN = align_of[SIMD[DType.float32, W]]()
 
     var i: Int = 0
     while i + W <= n:
-      vx = (x + i).load[width=W, alignment=ALIGN]()
-      vy = (y + i).load[width=W, alignment=ALIGN]()
-      (y + i).store[width=W, alignment=ALIGN](va * vx + vy)
+      var vx = x.unsafe_offset(i).unsafe_load[width=W, alignment=ALIGN]()
+      var vy = y.unsafe_offset(i).unsafe_load[width=W, alignment=ALIGN]()
+      y.unsafe_store[width=W, alignment=ALIGN](i, va * vx + vy)
       i += W
 
     # Scalar tail
     while i < n:
-      xi = (x + i).load[width=1]()
-      yi = (y + i).load[width=1]()
-      (y + i).store[width=1](a * xi + yi)
+      var xi = x.unsafe_offset(i).unsafe_load[width=1]()
+      var yi = y.unsafe_offset(i).unsafe_load[width=1]()
+      y.unsafe_store[width=1](i, a * xi + yi)
       i += 1
 
-fn main():
-    info = compile_info[saxpy16]()
+def main():
+    var info = compile_info[saxpy16]()
     print(info)
 ```
 
@@ -153,7 +155,7 @@ re-writing the algorithm. Here's an example (see [source code](./src/00_loop_low
 Refer to the screenshot of it in action in Google Colab environment ![google colab](./images/00_loop_lowering.png).
 
 Similary, if you wish to see the raw generated assembly, the current Mojo
-compiler (version 0.26) provides the facility `mojo build --emit=asm <filename>`
+compiler (version 1.2) provides the facility `mojo build --emit=asm <filename>`
 and it can be passed along to _pixi_ to execute.
 
 ```mojo

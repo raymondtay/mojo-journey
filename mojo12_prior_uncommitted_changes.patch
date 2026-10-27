@@ -1,0 +1,1389 @@
+diff --git a/01_basics/01_advanced_traits.mojo b/01_basics/01_advanced_traits.mojo
+index 3acac15..e2c976f 100644
+--- a/01_basics/01_advanced_traits.mojo
++++ b/01_basics/01_advanced_traits.mojo
+@@ -42,24 +42,24 @@
+ # - An equals sign (=) introduces a default value for an optional parameter.
+ 
+ # 1. Parameterized functions
+-def repeat[MsgType: Stringable, //, count : Int](msg: MsgType):
++def repeat[MsgType: , //, count : Int](msg: MsgType):
+   for _ in range(count):
+     print(String(msg))
+ 
+ # 2. Parameterized structs
+-struct GenericArray[ElementType: Copyable & Movable & ImplicitlyDestructible]:
+-  var data: UnsafePointer[Self.ElementType, MutExternalOrigin]
++struct GenericArray[ElementType: Copyable & Movable & ]:
++  var data: Pointer[Self.ElementType, MutExternalOrigin, _]
+   var size: Int
+   
+   def __init__(out self, var *elements: Self.ElementType):
+     self.size = len(elements)
+     self.data = alloc[Self.ElementType](self.size)
+     for i in range(self.size):
+-       self.data .unsafe_offset(i).init_pointee_move(elements[i].copy())
++       self.data .unsafe_offset(i).store((elements[i].copy())
+ 
+   def __del__(deinit self):
+     for i in range(self.size):
+-       self.data .unsafe_offset(i).destroy_pointee()
++       self.data .unsafe_offset(i)
+     self.data.unsafe_free()
+ 
+   def __getitem__(self, i raises:
+@@ -74,7 +74,7 @@ struct GenericArray[ElementType: Copyable & Movable & ImplicitlyDestructible]:
+ 
+ 
+ @fieldwise_init
+-struct Container[ElementType: Movable & ImplicitlyDestructible]:
++struct Container[ElementType: Movable & ]:
+   var element: Self.ElementType
+ 
+   def __str__[
+@@ -83,17 +83,17 @@ struct Container[ElementType: Movable & ImplicitlyDestructible]:
+     return String("Container[{}]".format(String(self.element)))
+ 
+ # 3. Inference failures - YES It CAN HAPPEN ☺
+-struct One[tpe: Writable & Copyable & Movable & ImplicitlyDestructible]:
++struct One[tpe: Writable & Copyable & Movable & ]:
+   var value: Self.tpe
+ 
+   def __init__(out self, value: Self.tpe):
+     self.value = value.copy()
+ 
+ def use_one():
+-  s1 = One("456")
+-  s2 = One(123)
++  var s1 = One("456")
++  var s2 = One(123)
+ 
+-struct Two[tpe: Writable & Copyable & Movable & ImplicitlyDestructible]:
++struct Two[tpe: Writable & Copyable & Movable & ]:
+   var val1: Self.tpe
+   var val2: Self.tpe
+ 
+@@ -107,7 +107,7 @@ struct Two[tpe: Writable & Copyable & Movable & ImplicitlyDestructible]:
+     print("🔥!!!!", String(thing1.value), String(thing2.value))
+ 
+ def use_two():
+-  s3 = Two(One("Infer"), One("me"))
++  var s3 = Two(One("Infer"), One("me"))
+   Two.fire(One(1), One(2))
+   # Two.fire(One("Mixed"), One(0))
+ 
+@@ -130,17 +130,17 @@ def dependent_type2[dtype: DType, //, value: Scalar[dtype]]():
+ def main():
+   repeat[3]("Hello world!")
+ 
+-  gen_arr = GenericArray[Int](1,2,3,4,5)
++  var gen_arr = GenericArray[Int](1,2,3,4,5)
+   for i in range(gen_arr.size):
+-    end = ", " if i < gen_arr.size - 1 else "\n"
++    var end = ", " if i < gen_arr.size - 1 else "\n"
+     print(gen_arr[i], end=end)
+ 
+   # print(gen_arr[6]) # error!!!
+ 
+-  _ = GenericArray[Float64].splat(8, 0) # i don't know what to do with this yet ...
++  var _ = GenericArray[Float64].splat(8, 0) # i don't know what to do with this yet ...
+ 
+-  float_container = Container(3.142)
+-  string_container = Container("Hello World")
++  var float_container = Container(3.142)
++  var string_container = Container("Hello World")
+   print(float_container.__str__())
+   print(string_container.__str__())
+ 
+@@ -152,4 +152,3 @@ def main():
+   dependent_type[DType.float64, Float64(3.142)]()
+   # Question: Do you know what needs to be changed to get this -> dependent_type[Float64(3.142)]()
+   dependent_type2[Float64(3.142)]()
+-
+diff --git a/01_basics/01_ctx_mgr.mojo b/01_basics/01_ctx_mgr.mojo
+index 35c0778..f4417da 100644
+--- a/01_basics/01_ctx_mgr.mojo
++++ b/01_basics/01_ctx_mgr.mojo
+@@ -14,8 +14,8 @@
+ #   the context. After the __exit__() method returns, the context manager is
+ #   destroyed.
+ 
+-import sys
+-import time
++import std.sys as sys
++import std.time as time
+ 
+ @fieldwise_init
+ struct Timer(ImplicitlyCopyable, Movable):
+@@ -29,8 +29,8 @@ struct Timer(ImplicitlyCopyable, Movable):
+     return self
+ 
+   def __exit__(mut self):
+-    end_time = time.perf_counter_ns()
+-    elapsed_time_ms = round((Float64(end_time) - Float64(self.start_time)) / 1e6, 3)
++    var end_time = time.perf_counter_ns()
++    var elapsed_time_ms = round((Float64(end_time) - Float64(self.start_time)) / 1e6, 3)
+     print("Elapsed time: ", elapsed_time_ms, " milliseconds")
+ 
+ @fieldwise_init
+@@ -45,8 +45,8 @@ struct ConditionalTimer(ImplicitlyCopyable, Movable):
+     return self
+ 
+   def __exit__(mut self):
+-    end_time = time.perf_counter_ns()
+-    elapsed_time_ms = round((Float64(end_time) - Float64(self.start_time)) / 1e6, 3)
++    var end_time = time.perf_counter_ns()
++    var elapsed_time_ms = round((Float64(end_time) - Float64(self.start_time)) / 1e6, 3)
+     print("Elapsed time: ", elapsed_time_ms, " milliseconds")
+ 
+   def __exit__(mut self, e : Error) raises -> Bool:
+@@ -78,7 +78,7 @@ def main() raises:
+         print("continue executed")
+         continue
+ 
+-      j = flaky_identity(i)
++      var j = flaky_identity(i)
+       print("j = ", j)
+       print("Ending execution")
+ 
+@@ -88,4 +88,4 @@ def main() raises:
+     if len(sys.argv())> 1:
+       raise "simulated error"
+     time.sleep(1.0)
+-    print("Ending execution")
++    print("Ending execution")
+\ No newline at end of file
+diff --git a/01_basics/01_error_handling.mojo b/01_basics/01_error_handling.mojo
+index e68af4b..ef3fe94 100644
+--- a/01_basics/01_error_handling.mojo
++++ b/01_basics/01_error_handling.mojo
+@@ -29,11 +29,11 @@ def main():
+       print("try    => ", value)
+       if value == 1:
+         continue
+-      result = "{} incremented is {}".format(value, incr2(value))
++      var result = "{} incremented is {}".format(value, incr2(value))
+     except e:
+       print("except  => ", e)
+     else:
+       print("else    => ", result)
+     finally:
+       print("finally => ===================")
+-  handled_error(44)
++  handled_error(44)
+\ No newline at end of file
+diff --git a/01_basics/01_helloworld.mojo b/01_basics/01_helloworld.mojo
+index a0625cc..c28c1fd 100644
+--- a/01_basics/01_helloworld.mojo
++++ b/01_basics/01_helloworld.mojo
+@@ -8,10 +8,10 @@
+ # ------
+ # 1) mojo build 01_helloworld.mojo
+ #    ./01_helloworld
+-import time
++import std.time as time
+ 
+ from gridv1 import Grid
+-from python import Python
++from std.python import Python
+ 
+ 
+ def run_display(
+@@ -23,33 +23,33 @@ def run_display(
+     pause: Float64 = 0.1,
+ ) -> None:
+     # import the pygame python package
+-    pygame = Python.import_module("pygame")
++    var pygame = Python.import_module("pygame")
+ 
+     # initialize pygame modules
+     pygame.init()
+ 
+     # create a window and sets its title
+-    window = pygame.display.set_mode(Python.tuple(window_height, window_width))
++    var window = pygame.display.set_mode(Python.tuple(window_height, window_width))
+     pygame.display.set_caption("Conway's Game of life")
+ 
+-    cell_height = window_height / grid.rows
+-    cell_width = window_width / grid.cols
+-    border_size = 1
+-    cell_fill_colour = pygame.Color(cell_colour)
+-    background_fill_colour = pygame.Color(background_colour)
++    var cell_height = window_height / grid.rows
++    var cell_width = window_width / grid.cols
++    var border_size = 1
++    var cell_fill_colour = pygame.Color(cell_colour)
++    var background_fill_colour = pygame.Color(background_colour)
+ 
+-    running = True
++    var running = True
+ 
+     while running:
+         # Poll for events
+-        event = pygame.event.poll()
++        var event = pygame.event.poll()
+         if event.type == pygame.QUIT:
+             # Quit if the window is closed
+-            running = False
++            var running = False
+         elif event.type == pygame.KEYDOWN:
+             # Also quit if the user presses <Escape> or `q`
+             if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
+-                running = False
++                var running = False
+ 
+         # Clear the window by painting with the background colour
+         window.fill(background_fill_colour)
+@@ -57,10 +57,10 @@ def run_display(
+         for row in range(grid.rows):
+             for col in range(grid.cols):
+                 if grid[row, col]:
+-                    x = col * cell_width + border_size
+-                    y = row * cell_height + border_size
+-                    width = cell_width - border_size
+-                    height = cell_height - border_size
++                    var x = col * cell_width + border_size
++                    var y = row * cell_height + border_size
++                    var width = cell_width - border_size
++                    var height = cell_height - border_size
+                     pygame.draw.rect(
+                         window,
+                         cell_fill_colour,
+@@ -70,12 +70,12 @@ def run_display(
+         pygame.display.flip()
+         # Pause to let me appreciate the scene
+         time.sleep(pause)
+-        grid = grid.evolve()
++        var grid = grid.evolve()
+ 
+     # Shutdown pygame cleanly
+     pygame.quit()
+ 
+ 
+ def main():
+-    start = Grid.random(128, 128)
+-    run_display(start^)
++    var start = Grid.random(128, 128)
++    run_display(start^)
+\ No newline at end of file
+diff --git a/01_basics/01_lifecycles.mojo b/01_basics/01_lifecycles.mojo
+index 2e5cabb..8838159 100644
+--- a/01_basics/01_lifecycles.mojo
++++ b/01_basics/01_lifecycles.mojo
+@@ -29,10 +29,9 @@ def main():
+   print(a)
+   # a.__del__() runs here for "red" balloon
+ 
+-  a = Balloon("green")
++  var a = Balloon("green")
+   print(a.color)
+   # a.__del__() runs immediately because "green" balloon is never used
+ 
+   print(b)
+   # b.__del__() runs here for "blue" balloon
+-
+diff --git a/01_basics/01_namedresults.mojo b/01_basics/01_namedresults.mojo
+index 2abd456..3a57691 100644
+--- a/01_basics/01_namedresults.mojo
++++ b/01_basics/01_namedresults.mojo
+@@ -1,5 +1,5 @@
+ # `alias` is used to name compile-time values
+-alias G: Int = 42
++comptime let G: Int = 42
+ 
+ 
+ struct ImmovableObject(Writable):
+@@ -14,10 +14,10 @@ struct ImmovableObject(Writable):
+ 
+ 
+ def create_immovable_object(var name: String, out obj: ImmovableObject):
+-    obj = ImmovableObject(name^)
++    var obj = ImmovableObject(name^)
+     obj.name += "!!!"
+ 
+ 
+ def main():
+-    my_obj = create_immovable_object("Blob")
+-    print(my_obj)
++    var my_obj = create_immovable_object("Blob")
++    print(my_obj)
+\ No newline at end of file
+diff --git a/01_basics/01_proglang.mojo b/01_basics/01_proglang.mojo
+index 94b9ec5..8b770aa 100644
+--- a/01_basics/01_proglang.mojo
++++ b/01_basics/01_proglang.mojo
+@@ -1,4 +1,4 @@
+-from python import Python
++from std.python import Python
+ 
+ 
+ # This basically says that whatever implements `AddOne` would add the value of
+@@ -67,4 +67,4 @@ def main():
+     var np = Python.import_module("numpy")
+     var arr = np.arange(15).reshape(3, 5)
+ 
+-    print(count_many_things(1, 2.2, 4.4, 12, MyPair(1, 2)))
++    print(count_many_things(1, 2.2, 4.4, 12, MyPair(1, 2)))
+\ No newline at end of file
+diff --git a/01_basics/01_types.mojo b/01_basics/01_types.mojo
+index 999f32e..a1cb4e4 100644
+--- a/01_basics/01_types.mojo
++++ b/01_basics/01_types.mojo
+@@ -1,4 +1,4 @@
+-import compile
++import std.compile as compile
+ 
+ # emberjson 0.3.0 is binary-incompatible with this Mojo nightly; disabled until updated
+ # from emberjson import parse, to_string
+@@ -22,7 +22,7 @@ def r[
+     vb: SIMD[DType.int8, size],
+     out vc: SIMD[DType.int8, size],
+ ):
+-    vc = va * vb
++    var vc = va * vb
+ 
+ 
+ def describeDType[dtype: DType]():
+@@ -47,7 +47,7 @@ def main():
+     # print(product)
+ 
+     # Option 2: works by construction, as well.
+-    vec3 = r[4](vec1, vec2)
++    var vec3 = r[4](vec1, vec2)
+     print(vec3)
+ 
+     print("--- Unoptimized LLVM IR ---")
+@@ -58,4 +58,4 @@ def main():
+ 
+     var a = Source("source")
+     var b: Target = a
+-    print("b is implicitly converted to `Target`, with name: ",b.name)
++    print("b is implicitly converted to `Target`, with name: ",b.name)
+\ No newline at end of file
+diff --git a/01_basics/01_working_with_origins.mojo b/01_basics/01_working_with_origins.mojo
+index 158e1a6..022d254 100644
+--- a/01_basics/01_working_with_origins.mojo
++++ b/01_basics/01_working_with_origins.mojo
+@@ -35,9 +35,9 @@ def pass_immutable_list(list: NameList) raises:
+   print(list[2])
+ 
+ def main():
+-  list = NameList("Thor", "Athena", "Zeus", "Dana", "Vrinda")
++  var list = NameList("Thor", "Athena", "Zeus", "Dana", "Vrinda")
+   ref name = list[2]
+   print(name)
+   name += "?"
+   print(list[2])
+-  pass_immutable_list(list)
++  pass_immutable_list(list)
+\ No newline at end of file
+diff --git a/01_basics/01_working_with_traits.mojo b/01_basics/01_working_with_traits.mojo
+index fb67f71..27f0514 100644
+--- a/01_basics/01_working_with_traits.mojo
++++ b/01_basics/01_working_with_traits.mojo
+@@ -26,14 +26,14 @@ def quack_n_go[tpe: Quackable & Flyable](object: tpe):
+   object.quack()
+   object.fly()
+ 
+-  alias EltType: Copyable & Movable
++  comptime let EltType: Copyable & Movable
+   def push(mut self, var item: Self.EltType):
+     ...
+   def pop(mut self) -> Self.EltType:
+     ...
+ struct MyStack[type: Copyable & Movable](Stacklike):
+-  alias EltType = Self.type
+-  alias list_type = List[Self.EltType]
++  comptime let EltType = Self.type
++  comptime let list_type = List[Self.EltType]
+ 
+   var list : Self.list_type
+ 
+@@ -63,13 +63,12 @@ def main():
+   quack_n_go(Duck())
+   quack_n_go(StealthCow())
+ 
+-  mystack = MyStack[Int]()
++  var mystack = MyStack[Int]()
+   mystack.push(1)
+   mystack.push(2)
+   mystack.push(3)
+   mystack.dump()
+   for _ in range(3):
+-    _ = mystack.pop()
++    var _ = mystack.pop()
+     print("dumped 1 element from the stack.")
+   mystack.dump()
+-
+diff --git a/01_basics/gridv1.mojo b/01_basics/gridv1.mojo
+index 5b51a2b..a0f132d 100644
+--- a/01_basics/gridv1.mojo
++++ b/01_basics/gridv1.mojo
+@@ -1,11 +1,11 @@
+ # Mojo requires you to declare all fields in the struct definition. You cannot
+ # add fields dynamically at run-time. You must declare the type for each field,
+ # but you cannot assign a value as part of the field declaration.
+-import random
++import std.random as random
+ 
+ 
+ @fieldwise_init
+-struct Grid(Copyable, Movable, Stringable):
++struct Grid(Copyable, Movable, ):
+     # Indicate that Grid conforms to the Movable and Copyable traits without
+     # implementing the corresponding lifecycle methods. In that case, the Mojo
+     # compiler automatically generates the missing methods for you.
+@@ -14,7 +14,7 @@ struct Grid(Copyable, Movable, Stringable):
+     var data: List[List[Int]]
+ 
+     def __str__(self) -> String:
+-        str = String()
++        var str = String()
+ 
+         for row in range(self.rows):
+             for col in range(self.cols):
+@@ -54,20 +54,20 @@ struct Grid(Copyable, Movable, Stringable):
+         return Self(rows, cols, data^)
+ 
+     def evolve(self) -> Self:
+-        next_generation = List[List[Int]]()
++        var next_generation = List[List[Int]]()
+ 
+         for row in range(self.rows):
+-            row_data = List[Int]()
++            var row_data = List[Int]()
+ 
+             # calculate neighboring row indices, handling "Wrap around"
+-            row_above = (row - 1) % self.rows
+-            row_below = (row + 1) % self.rows
++            var row_above = (row - 1) % self.rows
++            var row_below = (row + 1) % self.rows
+ 
+             for col in range(self.cols):
+-                col_left = (col - 1) % self.cols
+-                col_right = (col + 1) % self.cols
++                var col_left = (col - 1) % self.cols
++                var col_right = (col + 1) % self.cols
+ 
+-                num_neighbours = (
++                var num_neighbours = (
+                     self[row_above, col_left]
+                     + self[row_above, col]
+                     + self[row_above, col_right]
+@@ -79,14 +79,14 @@ struct Grid(Copyable, Movable, Stringable):
+                 )
+ 
+                 # Determine the state of the current cell for the next generation
+-                new_state = 0
++                var new_state = 0
+                 if self[row, col] == 1 and (
+-                    num_neighbours == 2 or num_neighbours == 3
++                    var num_neighbours == 2 or num_neighbours == 3
+                 ):
+-                    new_state = 1
++                    var new_state = 1
+                 elif self[row, col] == 0 and num_neighbours == 3:
+-                    new_state = 1
++                    var new_state = 1
+                 row_data.append(new_state)
+             next_generation.append(row_data^)
+ 
+-        return Self(self.rows, self.cols, next_generation^)
++        return Self(self.rows, self.cols, next_generation^)
+\ No newline at end of file
+diff --git a/01_gpu_basics/00_print_threads.mojo b/01_gpu_basics/00_print_threads.mojo
+index 2e4a992..9aad700 100644
+--- a/01_gpu_basics/00_print_threads.mojo
++++ b/01_gpu_basics/00_print_threads.mojo
+@@ -1,7 +1,7 @@
+ from std.sys import exit, has_accelerator, has_apple_gpu_accelerator
+ 
+-from gpu.host import DeviceContext
+-from gpu import block_dim, block_idx, global_idx, grid_dim, thread_idx
++from std.gpu import DeviceContext
++from std.gpu import block_dim, block_idx, global_idx, grid_dim, thread_idx
+ 
+ def print_threads():
+   """Print thread block and thread indices."""
+@@ -34,7 +34,7 @@ def main():
+         " GPUs"
+         )
+   else:
+-    ctx = DeviceContext()
++    var ctx = DeviceContext()
+ 
+     ctx.enqueue_function_experimental[print_threads](
+         grid_dim=(2, 2, 1),
+@@ -43,4 +43,3 @@ def main():
+ 
+   ctx.synchronize()
+   print("Done")
+-
+diff --git a/01_gpu_basics/00_scalar_addition.mojo b/01_gpu_basics/00_scalar_addition.mojo
+index 5277540..11544a3 100644
+--- a/01_gpu_basics/00_scalar_addition.mojo
++++ b/01_gpu_basics/00_scalar_addition.mojo
+@@ -1,13 +1,13 @@
+-from math import iota
++from std.math import iota
+ from std.sys import exit, has_accelerator
+ 
+-from gpu.host import DeviceContext
+-from gpu import block_dim, block_idx, thread_idx
++from std.gpu import DeviceContext
++from std.gpu import block_dim, block_idx, thread_idx
+ 
+ comptime num_elements = 20
+ 
+ def scalar_add(
+-    vector: UnsafePointer[Float32, MutAnyOrigin],
++    vector: Pointer[Float32, _],
+     size: Int,
+     scalar: Float32
+     ):
+@@ -28,7 +28,7 @@ def scalar_add(
+   # block_idx.x : the index of the current thread block.
+   # block_dim.x : number of threads per block.
+   # thread_idx.x : the index of the current thread within its block.
+-  idx = block_idx.x * block_dim.x + thread_idx.x
++  var idx = block_idx.x * block_dim.x + thread_idx.x
+ 
+   # Bounds checking: ensure we don't access memory beyond the vector size.
+   # In other words, we perform the kernel operation within the bounds of the
+@@ -43,10 +43,10 @@ def main():
+     exit(0)
+   else:
+     # initialize GPU context for device 0 (default GPU device).
+-    ctx = DeviceContext()
++    var ctx = DeviceContext()
+ 
+     # Create a buffer in host *CPU* memory to store the input data
+-    host_buffer = ctx.enqueue_create_host_buffer[DType.float32](num_elements)
++    var host_buffer = ctx.enqueue_create_host_buffer[DType.float32](num_elements)
+ 
+     # Wait for buffer creation to complete.
+     ctx.synchronize()
+@@ -57,13 +57,13 @@ def main():
+ 
+     # Create a buffer in device (GPU) memory to store the results of our
+     # transformed data.
+-    device_buffer = ctx.enqueue_create_buffer[DType.float32](num_elements)
++    var device_buffer = ctx.enqueue_create_buffer[DType.float32](num_elements)
+ 
+     # Copy the data from the CPU memory to the GPU memory.
+     ctx.enqueue_copy(src_buf=host_buffer, dst_buf=device_buffer)
+ 
+     # Compile the function
+-    scalar_add_kernel = ctx.compile_function[scalar_add, scalar_add]()
++    var scalar_add_kernel = ctx.compile_function[scalar_add, scalar_add]()
+ 
+     # Launched the compiled kernel function with the following arguments:
+     # - device_buffer: gpu memory containing our payload
+@@ -89,4 +89,3 @@ def main():
+     ctx.synchronize()
+     # Display the final results after GPU computation
+     print("Modified host buffer: ", host_buffer)
+-
+diff --git a/01_gpu_basics/basic_layouts.mojo b/01_gpu_basics/basic_layouts.mojo
+index c850252..7fb9528 100644
+--- a/01_gpu_basics/basic_layouts.mojo
++++ b/01_gpu_basics/basic_layouts.mojo
+@@ -1,4 +1,4 @@
+-from layout import IntTuple, Layout, print_layout
++from std.layout import IntTuple, Layout, print_layout
+ 
+ # What is a Mode?
+ #
+@@ -92,4 +92,4 @@ def main():
+     # row_and_column_major()
+     # coords_to_index()
+     # nested_modes()
+-    tiled_layout()
++    tiled_layout()
+\ No newline at end of file
+diff --git a/01_gpu_basics/vector_addition.mojo b/01_gpu_basics/vector_addition.mojo
+index b6e7907..e8dafe9 100644
+--- a/01_gpu_basics/vector_addition.mojo
++++ b/01_gpu_basics/vector_addition.mojo
+@@ -1,11 +1,11 @@
+-from gpu.host import DeviceContext
+-from gpu import block_dim, block_idx, thread_idx
++from std.gpu import DeviceContext
++from std.gpu import block_dim, block_idx, thread_idx
+ from std.sys import has_accelerator, has_apple_gpu_accelerator
+-from layout import Layout, LayoutTensor
+-from math import ceildiv
++from std.layout import Layout, LayoutTensor
++from std.math import ceildiv
+ 
+-alias block_size = 256
+-alias num_blocks = ceildiv(vector_size, block_size)
++comptime let block_size = 256
++comptime let num_blocks = ceildiv(vector_size, block_size)
+ 
+ 
+ def vector_addition(
+@@ -58,9 +58,9 @@ def print_threads():
+ 
+ 
+ # Vector data type and size
+-alias float_dtype = DType.float32
+-alias vector_size = 100000
+-alias layout = Layout.row_major(vector_size)
++comptime let float_dtype = DType.float32
++comptime let vector_size = 100000
++comptime let layout = Layout.row_major(vector_size)
+ 
+ 
+ def create_host_memory_device_memory_n_execute(ctx: DeviceContext):
+@@ -75,10 +75,10 @@ def create_host_memory_device_memory_n_execute(ctx: DeviceContext):
+     as it would cleaned up by Mojo.
+     """
+ 
+-    lhs_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](vector_size)
+-    rhs_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](vector_size)
++    var lhs_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](vector_size)
++    var rhs_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](vector_size)
+     ctx.synchronize()
+-    weight_factor = 0.5  # For demonstration purposes only.
++    var weight_factor = 0.5  # For demonstration purposes only.
+ 
+     # initialize the input vectors
+     for i in range(vector_size):
+@@ -87,19 +87,19 @@ def create_host_memory_device_memory_n_execute(ctx: DeviceContext):
+     print("LHS host buffer: ", lhs_host_buffer)
+     print("RHS host buffer: ", rhs_host_buffer)
+ 
+-    lhs_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
+-    rhs_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
++    var lhs_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
++    var rhs_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
+ 
+     ctx.enqueue_copy(dst_buf=lhs_device_buffer, src_buf=lhs_host_buffer)
+     ctx.enqueue_copy(dst_buf=rhs_device_buffer, src_buf=rhs_host_buffer)
+-    result_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
++    var result_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
+     print("LHS device buffer: ", lhs_device_buffer)
+     print("RHS device buffer: ", rhs_device_buffer)
+ 
+     # Wrap the DeviceBuffers in LayoutTensors
+-    lhs_tensor = LayoutTensor[float_dtype, layout](lhs_device_buffer)
+-    rhs_tensor = LayoutTensor[float_dtype, layout](rhs_device_buffer)
+-    result_tensor = LayoutTensor[float_dtype, layout](result_device_buffer)
++    var lhs_tensor = LayoutTensor[float_dtype, layout](lhs_device_buffer)
++    var rhs_tensor = LayoutTensor[float_dtype, layout](rhs_device_buffer)
++    var result_tensor = LayoutTensor[float_dtype, layout](result_device_buffer)
+ 
+     # Compile and enqueue the kernel
+     ctx.enqueue_function_checked[vector_addition, vector_addition](
+@@ -110,7 +110,7 @@ def create_host_memory_device_memory_n_execute(ctx: DeviceContext):
+         block_dim=block_size,
+     )
+     # Create a HostBuffer for the result vector
+-    result_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](
++    var result_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](
+         vector_size
+     )
+     # Copy the result vector from the DeviceBuffer to the HostBuffer
+@@ -128,10 +128,10 @@ def main():
+             "Printing from a kernel is not currently support on Apple Silicon"
+             " GPUs"
+         )
+-        ctx = DeviceContext()
++        var ctx = DeviceContext()
+         create_host_memory_device_memory_n_execute(ctx)
+     else:
+-        ctx = DeviceContext()
++        var ctx = DeviceContext()
+         # Invoking the compiled kernel function with grid_dim=2 and block_dim=64
+         # which means that we are using a grid of 2 thread blocks with 64 threads
+         # each per block, totalling 128 threads in the grid
+@@ -147,4 +147,4 @@ def main():
+ # tasks while the CPU is busy with other work. Each `DeviceContext` has an
+ # associated stream of queued operations to execute on the GPU. Operations with
+ # a stream execute in the order they are issued.
+-#
++#
+\ No newline at end of file
+diff --git a/01_layouts/1d_layouts.mojo b/01_layouts/1d_layouts.mojo
+index 003abbe..f855a5a 100644
+--- a/01_layouts/1d_layouts.mojo
++++ b/01_layouts/1d_layouts.mojo
+@@ -1,4 +1,4 @@
+-from layout import Layout, IntTuple, print_layout
++from std.layout import Layout, IntTuple, print_layout
+ 
+ 
+ def single_dim_layout():
+@@ -11,7 +11,7 @@ def two_dim_layout():
+     """
+     It's instructive to examine for coherency of the (shape:stride) format.
+     Take some time to understand and trace through the shape and stride.
+-    size = 16
++    var size = 16
+     ((8, 2):(1, 8))
+            0    1
+         +----+----+
+@@ -39,4 +39,4 @@ def two_dim_layout():
+ 
+ def main():
+     single_dim_layout()
+-    two_dim_layout()
++    two_dim_layout()
+\ No newline at end of file
+diff --git a/01_layouts/2d_layouts.mojo b/01_layouts/2d_layouts.mojo
+index e9c3323..294a981 100644
+--- a/01_layouts/2d_layouts.mojo
++++ b/01_layouts/2d_layouts.mojo
+@@ -1,4 +1,4 @@
+-from layout import Layout, IntTuple, print_layout
++from std.layout import Layout, IntTuple, print_layout
+ 
+ 
+ def col_major():
+@@ -45,4 +45,4 @@ def row_major():
+ 
+ def main():
+     row_major()
+-    col_major()
++    col_major()
+\ No newline at end of file
+diff --git a/02_advanced/01_parameterization.mojo b/02_advanced/01_parameterization.mojo
+index f167032..f62a62a 100644
+--- a/02_advanced/01_parameterization.mojo
++++ b/02_advanced/01_parameterization.mojo
+@@ -114,4 +114,3 @@ def main():
+   eat(Fudge[5,8,9]())
+ 
+ 
+-
+diff --git a/02_advanced/01_pointers.mojo b/02_advanced/01_pointers.mojo
+index d91efb4..f11832b 100644
+--- a/02_advanced/01_pointers.mojo
++++ b/02_advanced/01_pointers.mojo
+@@ -65,7 +65,7 @@ struct SharedDict(Movable, ImplicitlyCopyable):
+ def alloc_float_values():
+   var float_ptr = alloc[Float64](6)
+   for offset in range(6): # generates values 0 .. 5
+-     float_ptr.unsafe_offset(offset).init_pointee_copy(0.0)
++     float_ptr.unsafe_offset(offset).store((0.0)
+ 
+   float_ptr[2] = 3.0
+   for offset in range(6):
+@@ -77,10 +77,10 @@ def main():
+   print(ptr[]) # access an initialized value
+ 
+   # Demonstrating SharedDict
+-  thing1 = SharedDict()
+-  thing2 = thing1
++  var thing1 = SharedDict()
++  var thing2 = thing1
+   thing1["Flip"] = "Flop"
+   print(thing2["Flip"])
+ 
+   # Demonstrating alloc_float_values
+-  alloc_float_values()
++  alloc_float_values()
+\ No newline at end of file
+diff --git a/02_advanced/01_rebind.mojo b/02_advanced/01_rebind.mojo
+index d3a39ec..abbdff2 100644
+--- a/02_advanced/01_rebind.mojo
++++ b/02_advanced/01_rebind.mojo
+@@ -27,4 +27,3 @@ def take_simd8(x: SIMD[DType.float32, 8]):
+ def generic_simd2[nelts: Int](x: SIMD[DType.float32, nelts]):
+     if nelts == 8:
+         take_simd8(rebind[SIMD[DType.float32, 8]](x)) # rebind !!!
+-
+diff --git a/02_advanced/01_tiled_matmul.mojo b/02_advanced/01_tiled_matmul.mojo
+index bc81354..a328114 100644
+--- a/02_advanced/01_tiled_matmul.mojo
++++ b/02_advanced/01_tiled_matmul.mojo
+@@ -37,16 +37,16 @@
+ # producer-consumer cycle: load ⇒ barrier ⇒ compute ⇒ barrier ⇒ repeat. Removing
+ # either barrier would break this algorithm's correctness.
+ #
+-from math import ceildiv
++from std.math import ceildiv
+ from std.sys import exit, has_accelerator
+ 
+-from gpu.sync import barrier
+-from gpu.host import DeviceContext
+-from gpu import thread_idx, block_idx
+-from gpu.memory import AddressSpace
++from std.gpu.sync import barrier
++from std.gpu import DeviceContext
++from std.gpu import thread_idx, block_idx
++from std.gpu.memory import AddressSpace
+ 
+ # Layout tensort support from open source layout package
+-from layout import Layout, LayoutTensor
++from std.layout import Layout, LayoutTensor
+ 
+ # Data type selection: float32 provides a good balance of precision and
+ # performance
+@@ -98,14 +98,14 @@ def tiled_matmul_kernel(
+       float_dtype,
+       tile_a_layout,
+       MutAnyOrigin,
+-      address_space = AddressSpace.SHARED,
++      var address_space = AddressSpace.SHARED,
+   ].stack_allocation()
+ 
+   var tile_b_shared = LayoutTensor[
+       float_dtype,
+       tile_b_layout,
+       MutAnyOrigin,
+-      address_space = AddressSpace.SHARED,
++      var address_space = AddressSpace.SHARED,
+   ].stack_allocation()
+ 
+   # initialize accumulator and start tiling loop
+@@ -150,4 +150,4 @@ def tiled_matmul_kernel(
+ 
+   # Write final results to global memory with bounds checking
+   if (global_row < MATRIX_M) and (global_col < MATRIX_N):
+-    matrix_c[global_row, global_col] = accumulator
++    matrix_c[global_row, global_col] = accumulator
+\ No newline at end of file
+diff --git a/03_applications/AoSoA/src/AoS_SoA.mojo b/03_applications/AoSoA/src/AoS_SoA.mojo
+index eb36251..66736b9 100644
+--- a/03_applications/AoSoA/src/AoS_SoA.mojo
++++ b/03_applications/AoSoA/src/AoS_SoA.mojo
+@@ -1,4 +1,4 @@
+-from time import perf_counter_ns
++from std.time import perf_counter_ns
+ 
+ @fieldwise_init
+ struct Particle(Copyable, ImplicitlyCopyable):
+@@ -9,13 +9,13 @@ struct Particle(Copyable, ImplicitlyCopyable):
+     var vy: Float32
+     var vz: Float32
+ 
+-    def __copyinit__(out self, existing: Self):
+-      self.x = existing.x.copy()
+-      self.y = existing.y.copy()
+-      self.z = existing.z.copy()
+-      self.vx = existing.vx.copy()
+-      self.vy = existing.vy.copy()
+-      self.vz = existing.vz.copy()
++    def __copyinit__(out self, copy: Self):
++      self.x = copy.x
++      self.y = copy.y
++      self.z = copy.z
++      self.vx = copy.vx
++      self.vy = copy.vy
++      self.vz = copy.vz
+ 
+ 
+ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
+@@ -34,13 +34,13 @@ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
+         self.vy = List[Float32](fill=0, length=n)
+         self.vz = List[Float32](fill=0, length=n)
+ 
+-    def __copyinit__(out self, existing: Self):
+-      self.x = existing.x.copy()
+-      self.y = existing.y.copy()
+-      self.z = existing.z.copy()
+-      self.vx = existing.vx.copy()
+-      self.vy = existing.vy.copy()
+-      self.vz = existing.vz.copy()
++    def __copyinit__(out self, copy: Self):
++      self.x = copy.x
++      self.y = copy.y
++      self.z = copy.z
++      self.vx = copy.vx
++      self.vy = copy.vy
++      self.vz = copy.vz
+ 
+ # Array-of-Structures: contiguous particles[]
+ def update_positions_aos(var particles: List[Particle], dt: Float32):
+@@ -68,7 +68,7 @@ def bench_aos(particles: List[Particle], dt: Float32, iters: Int = 5) -> Float64
+     var end = perf_counter_ns()
+     var elapsed = Float64(end - start) / 1_000_000.0
+     if elapsed < best_time:
+-      best_time = elapsed
++      var best_time = elapsed
+   return best_time
+ 
+ def bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) -> Float64:
+@@ -79,7 +79,7 @@ def bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) -> Float64:
+     var end = perf_counter_ns()
+     var elapsed = Float64(end - start) / 1_000_000.0
+     if elapsed < best_time:
+-      best_time = elapsed
++      var best_time = elapsed
+   return best_time
+ 
+ 
+@@ -88,9 +88,9 @@ def benchmark(n: Int = 10_000_000):
+     aos.reserve(n)
+     for i in range(n):
+         aos.append(Particle(
+-            x = Float32(i),
+-            y = 1.0, z = 2.0,
+-            vx = 0.1, vy = 0.2, vz = 0.3
++            var x = Float32(i),
++            var y = 1.0, z = 2.0,
++            var vx = 0.1, vy = 0.2, vz = 0.3
+         ))
+ 
+     var soa = ParticlesSoA(n)
+@@ -112,4 +112,4 @@ def benchmark(n: Int = 10_000_000):
+     print("Speedup SoA/AoS: ", t_aos / t_soa)
+ 
+ def main():
+-    benchmark()
++    benchmark()
+\ No newline at end of file
+diff --git a/10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo b/10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo
+index ff65307..9ec3474 100644
+--- a/10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo
++++ b/10_hyperscaling_for_Mojo_programmers/src/00_loop_lowering.mojo
+@@ -19,38 +19,37 @@
+ from std.memory import UnsafePointer
+ from std.sys import align_of
+ from std.simd import SIMD
+-from compile import compile_info
++from std.compile import compile_info
+ 
+ def saxpy16(
+-    y: UnsafePointer[mut=True, Scalar[DType.float32]],
+-    x: UnsafePointer[mut=True, Scalar[DType.float32]],
++    y: Pointer[Scalar[DType.float32], _],
++    x: Pointer[Scalar[DType.float32], _],
+     n: Int,
+     a: Float32,
+ ):
+     comptime W = 16
+-    va = SIMD[DType.float32, W](a)
++    var va = SIMD[DType.float32, W](a)
+ 
+     # Alignment for vector load/store (safe choice for 16x f32)
+     comptime ALIGN = align_of[SIMD[DType.float32, W]]()
+ 
+     var i: Int = 0
+     while i + W <= n:
+-      vx = (x + i).load[width=W, alignment=ALIGN]()
+-      vy = (y + i).load[width=W, alignment=ALIGN]()
+-      (y + i).store[width=W, alignment=ALIGN](va * vx + vy)
++      var vx = (x.unsafe_offset(i)).unsafe_load[width=W, alignment=ALIGN]()
++      var vy = (y.unsafe_offset(i)).unsafe_load[width=W, alignment=ALIGN]()
++      (y.unsafe_offset(i)).unsafe_store(0, va * vx + vy)
+       i += W
+ 
+     # Scalar tail
+     while i < n:
+-      xi = (x + i).load[width=1]()
+-      yi = (y + i).load[width=1]()
++      var xi = (x + i).load[width=1]()
++      var yi = (y + i).load[width=1]()
+       (y + i).store[width=1](a * xi + yi)
+       i += 1
+ 
+ def main():
+-    info = compile_info[saxpy16]()
++    var info = compile_info[saxpy16]()
+     print(info)
+ 
+ # In cell-4, let's run it:
+ # !pixi run --manifest-path mojo_project/ mojo mojo_project/loop_lowering.mojo
+-
+diff --git a/tests/test_basics.mojo b/tests/test_basics.mojo
+index 4e6fb95..08bf381 100644
+--- a/tests/test_basics.mojo
++++ b/tests/test_basics.mojo
+@@ -74,7 +74,7 @@ struct ImmovableObject(Writable):
+ 
+ 
+ def create_immovable_object(var name: String, out obj: ImmovableObject):
+-    obj = ImmovableObject(name^)
++    var obj = ImmovableObject(name^)
+     obj.name += "!!!"
+ 
+ 
+@@ -132,9 +132,9 @@ def test_incr_normal() raises:
+ def test_incr_overflow() raises:
+     var caught = False
+     try:
+-        _ = incr(Int.MAX)
++        var _ = incr(Int.MAX)
+     except:
+-        caught = True
++        var caught = True
+     assert_true(caught, "Expected overflow error")
+ 
+ 
+@@ -146,9 +146,9 @@ def test_incr2_normal() raises:
+ def test_incr2_overflow() raises:
+     var caught = False
+     try:
+-        _ = incr2(Int.MAX)
++        var _ = incr2(Int.MAX)
+     except:
+-        caught = True
++        var caught = True
+     assert_true(caught, "Expected overflow error")
+ 
+ 
+@@ -163,10 +163,10 @@ def test_flaky_identity_divisible_by_4() raises:
+     var caught = False
+     var msg = String("")
+     try:
+-        _ = flaky_identity(4)
++        var _ = flaky_identity(4)
+     except e:
+-        caught = True
+-        msg = String(e)
++        var caught = True
++        var msg = String(e)
+     assert_true(caught)
+     assert_true("really bad" in msg)
+ 
+@@ -175,10 +175,10 @@ def test_flaky_identity_even_not_div4() raises:
+     var caught = False
+     var msg = String("")
+     try:
+-        _ = flaky_identity(2)
++        var _ = flaky_identity(2)
+     except e:
+-        caught = True
+-        msg = String(e)
++        var caught = True
++        var msg = String(e)
+     assert_true(caught)
+     assert_true("just a warning" in msg)
+ 
+@@ -196,4 +196,4 @@ def test_create_immovable_object_empty() raises:
+ def test_immovable_object_write() raises:
+     var obj = ImmovableObject("Test")
+     var s = String(obj)
+-    assert_equal(s, "Immovable Object is: Test")
++    assert_equal(s, "Immovable Object is: Test")
+\ No newline at end of file
+diff --git a/tests/test_collections.mojo b/tests/test_collections.mojo
+index 732673e..2c7213a 100644
+--- a/tests/test_collections.mojo
++++ b/tests/test_collections.mojo
+@@ -2,7 +2,7 @@ from std.testing import assert_equal, assert_true
+ from std.memory import alloc
+ 
+ 
+-struct GenericArray[ElementType: Copyable & Movable & ImplicitlyDestructible]:
++struct GenericArray[ElementType: Copyable & Movable & ]:
+     var data: Pointer[Self.ElementType, MutUntrackedOrigin]
+     var size: Int
+ 
+@@ -10,11 +10,11 @@ struct GenericArray[ElementType: Copyable & Movable & ImplicitlyDestructible]:
+         self.size = len(elements)
+         self.data = alloc[Self.ElementType](self.size)
+         for i in range(self.size):
+-             self.data .unsafe_offset(i).init_pointee_move(elements[i].copy())
++             self.data .unsafe_offset(i).store((elements[i].copy())
+ 
+     def __deinit__(deinit self):
+         for i in range(self.size):
+-             self.data .unsafe_offset(i).destroy_pointee()
++             self.data .unsafe_offset(i)
+         self.data.unsafe_free()
+ 
+     def __getitem__(self, i: Int) raises -> ref[self] Self.ElementType:
+@@ -30,7 +30,7 @@ struct GenericArray[ElementType: Copyable & Movable & ImplicitlyDestructible]:
+         return GenericArray[Self.ElementType](value.copy())
+ 
+ 
+-struct MyStack[type: Copyable & Movable & Deinitable & ImplicitlyDestructible]:
++struct MyStack[type: Copyable & Movable & Deinitable & ]:
+     var list: List[Self.type]
+ 
+     def __init__(out self):
+@@ -64,9 +64,9 @@ def test_generic_array_out_of_bounds() raises:
+     var arr = GenericArray[Int](1, 2, 3)
+     var caught = False
+     try:
+-        _ = arr[5]
++        var _ = arr[5]
+     except:
+-        caught = True
++        var caught = True
+     assert_true(caught, "Expected out-of-bounds error")
+ 
+ 
+@@ -116,4 +116,4 @@ def test_stack_interleaved_push_pop() raises:
+     assert_equal(s.pop(), 2)
+     s.push(3)
+     assert_equal(s.pop(), 3)
+-    assert_equal(s.pop(), 1)
++    assert_equal(s.pop(), 1)
+\ No newline at end of file
+diff --git a/tests/test_grid.mojo b/tests/test_grid.mojo
+index 0cbfc93..0f05026 100644
+--- a/tests/test_grid.mojo
++++ b/tests/test_grid.mojo
+@@ -2,13 +2,13 @@ from std.testing import assert_equal, assert_true
+ 
+ # Grid struct copied from 01_basics/gridv1.mojo for testing.
+ @fieldwise_init
+-struct Grid(Copyable, Movable, Stringable):
++struct Grid(Copyable, Movable, ):
+     var rows: Int
+     var cols: Int
+     var data: List[List[Int]]
+ 
+     def __str__(self) -> String:
+-        str = String()
++        var str = String()
+         for row in range(self.rows):
+             for col in range(self.cols):
+                 if self[row, col] == 1:
+@@ -26,15 +26,15 @@ struct Grid(Copyable, Movable, Stringable):
+         self.data[row][col] = value
+ 
+     def evolve(self) -> Self:
+-        next_generation = List[List[Int]]()
++        var next_generation = List[List[Int]]()
+         for row in range(self.rows):
+-            row_data = List[Int]()
+-            row_above = (row - 1) % self.rows
+-            row_below = (row + 1) % self.rows
++            var row_data = List[Int]()
++            var row_above = (row - 1) % self.rows
++            var row_below = (row + 1) % self.rows
+             for col in range(self.cols):
+-                col_left = (col - 1) % self.cols
+-                col_right = (col + 1) % self.cols
+-                num_neighbours = (
++                var col_left = (col - 1) % self.cols
++                var col_right = (col + 1) % self.cols
++                var num_neighbours = (
+                     self[row_above, col_left]
+                     + self[row_above, col]
+                     + self[row_above, col_right]
+@@ -44,13 +44,13 @@ struct Grid(Copyable, Movable, Stringable):
+                     + self[row_below, col]
+                     + self[row_below, col_right]
+                 )
+-                new_state = 0
++                var new_state = 0
+                 if self[row, col] == 1 and (
+-                    num_neighbours == 2 or num_neighbours == 3
++                    var num_neighbours == 2 or num_neighbours == 3
+                 ):
+-                    new_state = 1
++                    var new_state = 1
+                 elif self[row, col] == 0 and num_neighbours == 3:
+-                    new_state = 1
++                    var new_state = 1
+                 row_data.append(new_state)
+             next_generation.append(row_data^)
+         return Self(self.rows, self.cols, next_generation^)
+@@ -148,4 +148,4 @@ def test_evolve_underpopulation() raises:
+     var g = make_grid(5, 5)
+     g[2, 2] = 1
+     var next_g = g.evolve()
+-    assert_equal(next_g[2, 2], 0)
++    assert_equal(next_g[2, 2], 0)
+\ No newline at end of file
+diff --git a/tests/test_particles.mojo b/tests/test_particles.mojo
+index 2325fcf..f936354 100644
+--- a/tests/test_particles.mojo
++++ b/tests/test_particles.mojo
+@@ -9,16 +9,8 @@ struct Particle(Copyable, ImplicitlyCopyable):
+     var vy: Float32
+     var vz: Float32
+ 
+-    def __copyinit__(out self, existing: Self):
+-        self.x = existing.x.copy()
+-        self.y = existing.y.copy()
+-        self.z = existing.z.copy()
+-        self.vx = existing.vx.copy()
+-        self.vy = existing.vy.copy()
+-        self.vz = existing.vz.copy()
+ 
+-
+-struct ParticlesSoA(Copyable, ImplicitlyCopyable):
++struct ParticlesSoA(Copyable):
+     var x: List[Float32]
+     var y: List[Float32]
+     var z: List[Float32]
+@@ -34,16 +26,16 @@ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
+         self.vy = List[Float32](fill=0, length=n)
+         self.vz = List[Float32](fill=0, length=n)
+ 
+-    def __copyinit__(out self, existing: Self):
+-        self.x = existing.x.copy()
+-        self.y = existing.y.copy()
+-        self.z = existing.z.copy()
+-        self.vx = existing.vx.copy()
+-        self.vy = existing.vy.copy()
+-        self.vz = existing.vz.copy()
++    def __copyinit__(out self, copy: Self):
++        self.x = copy.x
++        self.y = copy.y
++        self.z = copy.z
++        self.vx = copy.vx
++        self.vy = copy.vy
++        self.vz = copy.vz
+ 
+ 
+-def update_positions_aos(var particles: List[Particle], dt: Float32):
++def update_positions_aos(mut particles: List[Particle], dt: Float32):
+     var n = len(particles)
+     for i in range(n):
+         var p = particles[i]
+@@ -64,7 +56,7 @@ def update_positions_soa(mut p: ParticlesSoA, dt: Float32):
+ def approx_eq(a: Float32, b: Float32, tol: Float32 = 1e-5) -> Bool:
+     var diff = a - b
+     if diff < 0:
+-        diff = -diff
++        var diff = -diff
+     return diff < tol
+ 
+ 
+@@ -156,4 +148,4 @@ def test_update_empty_particles() raises:
+ 
+     var soa = ParticlesSoA(0)
+     update_positions_soa(soa, Float32(1.0))
+-    assert_equal(len(soa.x), 0)
++    assert_equal(len(soa.x), 0)
+\ No newline at end of file
+diff --git a/tests/test_pointers.mojo b/tests/test_pointers.mojo
+index e3cabf5..19d9460 100644
+--- a/tests/test_pointers.mojo
++++ b/tests/test_pointers.mojo
+@@ -62,7 +62,7 @@ def test_alloc_float_values() raises:
+     """Test UnsafePointer allocation and initialization."""
+     var float_ptr = alloc[Float64](6)
+     for offset in range(6):
+-         float_ptr .unsafe_offset(offset).init_pointee_copy(0.0)
++         float_ptr .unsafe_offset(offset).store((0.0)
+ 
+     float_ptr[2] = 3.0
+ 
+@@ -74,5 +74,5 @@ def test_alloc_float_values() raises:
+     assert_equal(float_ptr[5], 0.0)
+ 
+     for offset in range(6):
+-         float_ptr .unsafe_offset(offset).destroy_pointee()
+-    float_ptr.unsafe_free()
++         float_ptr .unsafe_offset(offset)
++    float_ptr.unsafe_free()
+\ No newline at end of file
+diff --git a/tests/test_saxpy.mojo b/tests/test_saxpy.mojo
+index 00c68df..541e7f8 100644
+--- a/tests/test_saxpy.mojo
++++ b/tests/test_saxpy.mojo
+@@ -5,26 +5,26 @@ from std.simd import SIMD
+ 
+ 
+ def saxpy16(
+-    y: UnsafePointer[mut=True, Scalar[DType.float32]],
+-    x: UnsafePointer[mut=True, Scalar[DType.float32]],
++    y: Pointer[Scalar[DType.float32], _],
++    x: Pointer[Scalar[DType.float32], _],
+     n: Int,
+     a: Float32,
+ ):
+     comptime W = 16
+-    va = SIMD[DType.float32, W](a)
++    var va = SIMD[DType.float32, W](a)
+     comptime ALIGN = align_of[SIMD[DType.float32, W]]()
+ 
+     var i: Int = 0
+     while i + W <= n:
+-        vx = (x + i).load[width=W, alignment=ALIGN]()
+-        vy = (y + i).load[width=W, alignment=ALIGN]()
++        var vx = (x + i).load[width=W, alignment=ALIGN]()
++        var vy = (y + i).load[width=W, alignment=ALIGN]()
+         (y + i).store[width=W, alignment=ALIGN](va * vx + vy)
+         i += W
+ 
+     # Scalar tail
+     while i < n:
+-        xi = (x + i).load[width=1]()
+-        yi = (y + i).load[width=1]()
++        var xi = (x + i).load[width=1]()
++        var yi = (y + i).load[width=1]()
+         (y + i).store[width=1](a * xi + yi)
+         i += 1
+ 
+@@ -32,28 +32,28 @@ def saxpy16(
+ def approx_eq(a: Float32, b: Float32, tol: Float32 = 1e-4) -> Bool:
+     var diff = a - b
+     if diff < 0:
+-        diff = -diff
++        var diff = -diff
+     return diff < tol
+ 
+ 
+-def alloc_and_fill(n: Int, value: Float32) -> UnsafePointer[mut=True, Scalar[DType.float32]]:
+-    var ptr = UnsafePointer[Scalar[DType.float32]].alloc(n)
++def alloc_and_fill(n: Int, value: Float32) -> Pointer[Scalar[DType.float32], _]:
++    var ptr = Pointer[Scalar[DType.float32], _].alloc(n)
+     for i in range(n):
+-         ptr .unsafe_offset(i).init_pointee_copy(value)
++         ptr .unsafe_offset(i).store((value)
+     return ptr
+ 
+ 
+-def alloc_iota(n: Int) -> UnsafePointer[mut=True, Scalar[DType.float32]]:
++def alloc_iota(n: Int) -> Pointer[Scalar[DType.float32], _]:
+     """Allocate and fill with 0, 1, 2, ..., n-1."""
+-    var ptr = UnsafePointer[Scalar[DType.float32]].alloc(n)
++    var ptr = Pointer[Scalar[DType.float32], _].alloc(n)
+     for i in range(n):
+-         ptr .unsafe_offset(i).init_pointee_copy(Float32(i))
++         ptr .unsafe_offset(i).store((Float32(i))
+     return ptr
+ 
+ 
+-def free_ptr(ptr: UnsafePointer[mut=True, Scalar[DType.float32]], n: Int):
++def free_ptr(ptr: Pointer[Scalar[DType.float32], _], n: Int):
+     for i in range(n):
+-         ptr .unsafe_offset(i).destroy_pointee()
++         ptr .unsafe_offset(i)
+     ptr.unsafe_free()
+ 
+ 
+@@ -143,18 +143,18 @@ def test_saxpy_single_element() raises:
+ def test_saxpy_zero_length() raises:
+     """Test with n=0 - should be a no-op."""
+     var n = 0
+-    var x = UnsafePointer[Scalar[DType.float32]].alloc(1)
+-    var y = UnsafePointer[Scalar[DType.float32]].alloc(1)
+-    (x).init_pointee_copy(Float32(99.0))
+-    (y).init_pointee_copy(Float32(99.0))
++    var x = Pointer[Scalar[DType.float32], _].alloc(1)
++    var y = Pointer[Scalar[DType.float32], _].alloc(1)
++    (x).store((Float32(99.0))
++    (y).store((Float32(99.0))
+ 
+     saxpy16(y, x, n, Float32(2.0))
+ 
+     # y should be untouched since n=0
+     assert_true(approx_eq(y[0], 99.0))
+ 
+-    (x).destroy_pointee()
+-    (y).destroy_pointee()
++    (x)
++    (y)
+     x.unsafe_free()
+     y.unsafe_free()
+ 
+@@ -190,4 +190,4 @@ def test_saxpy_zero_scalar() raises:
+         assert_true(approx_eq(y[i], 42.0))
+ 
+     free_ptr(x, n)
+-    free_ptr(y, n)
++    free_ptr(y, n)
+\ No newline at end of file
+diff --git a/tests/test_simd_ops.mojo b/tests/test_simd_ops.mojo
+index dcbbe48..6291396 100644
+--- a/tests/test_simd_ops.mojo
++++ b/tests/test_simd_ops.mojo
+@@ -162,4 +162,4 @@ def test_sentiment_custom_value() raises:
+     var s2 = Sentiment(42)
+     var s3 = Sentiment(99)
+     assert_true(s1 == s2)
+-    assert_true(s1 != s3)
++    assert_true(s1 != s3)
+\ No newline at end of file

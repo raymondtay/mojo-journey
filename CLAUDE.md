@@ -34,7 +34,19 @@ No formal test framework is configured; tests are run as standalone Mojo files i
 
 ## Key Dependencies (pixi.toml)
 
-- `mojo >= 0.26.1` (nightly, from modular conda channel)
+- `mojo` 1.2.x and `max` 26.7.x (stable `https://conda.modular.com/max` channel). `max` is required for GPU code (`max.gpu`) and `layout`.
+
+## Mojo 1.2 conventions used in this repo
+
+- `def` only (`fn` was removed); `def` does **not** imply `raises`, so declare `raises` explicitly.
+- Stdlib imports use the `std.` prefix (`from std.time import ...`, `from std import random`); GPU imports use `max.gpu` (`from max.gpu.host import DeviceContext`); `layout` is imported as `layout`.
+- `comptime` replaces `alias`; `comptime for` / `comptime if` replace `@parameter for/if`.
+- Every new variable needs `var` (implicit declarations are errors).
+- `Writable.write_to` replaces `Stringable`/`__str__`; `Deinitable` replaces `ImplicitlyDestructible`; `__init__(out self, *, copy: Self)` replaces `__copyinit__`; `__deinit__` replaces `__del__`.
+- `Pointer` replaces `UnsafePointer` (`unsafe_offset`, `unsafe_write`, `unsafe_load`, `ptr[unsafe_offset=i]`); heap memory via `alloc(Layout[T](count=n))` -> `Allocation`, released with `dealloc(a^)` (or `.into_managed()`).
+- SIMD widths inferred from arguments are `SIMDLength`; use `.length` (not `.size`).
+- GPU kernels take fixed-width ints (`Int32`), not `Int`; launch with `ctx.enqueue_function[kernel](args..., grid_dim=..., block_dim=...)`; detect Apple GPUs with `default_accelerator().is_apple_gpu()`.
+- Tests end with `def main() raises: TestSuite.discover_tests[__functions_in_module()]().run()`.
 - `numpy`, `emberjson`, `numba`, `pygame`
 
 ## Repository Structure

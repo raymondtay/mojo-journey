@@ -41,19 +41,24 @@
 #                exclusive ownership potentially shared with other instances of ArcPointer.
 # * ArcPointer is a reference-counted smart pointer that points to an owned
 #              value with ownership potentially shared with other instances of ArcPointer.
-# * UnsafePointer points to one or more consecutive memory locations, and refer to
-#                unitialized memory.
+# * Pointer (Mojo 1.2) also covers what UnsafePointer used to do: it can point to
+#           one or more consecutive memory locations and refer to uninitialized
+#           memory. UnsafePointer is deprecated; the unsafe operations live on
+#           Pointer as `unsafe_`-prefixed methods (unsafe_offset, unsafe_write,
+#           unsafe_load, ...). Heap memory comes from `alloc(Layout[T](count=n))`,
+#           which returns an `Allocation` the compiler forces you to `dealloc`.
 #
-from memory import *
+from std.memory import *
 
 struct SharedDict(Movable, ImplicitlyCopyable):
     var attributes: ArcPointer[Dict[String, String]]
 
-    fn __init__(out self):
-        attributesDict: Dict[String, String] = {}
+    def __init__(out self):
+        var attributesDict: Dict[String, String] = {}
         self.attributes = ArcPointer(attributesDict.copy())
 
-    fn __copyinit__(out self, copy: Self):
+    # Mojo 1.2: `__copyinit__` is replaced by a keyword-only `copy` initializer.
+    def __init__(out self, *, copy: Self):
         self.attributes = copy.attributes
 
     def __setitem__(mut self, key: String, value: String):
@@ -62,14 +67,17 @@ struct SharedDict(Movable, ImplicitlyCopyable):
     def __getitem__(self, key: String) -> String:
         return self.attributes[].get(key, default="")
 
-fn alloc_float_values():
-  var float_ptr = alloc[Float64](6)
+def alloc_float_values():
+  var allocation = alloc(Layout[Float64](count=6))
+  var float_ptr = allocation.unsafe_ptr()
   for offset in range(6): # generates values 0 .. 5
-    (float_ptr+offset).init_pointee_copy(0.0)
+    float_ptr.unsafe_offset(offset).unsafe_write(0.0)
 
-  float_ptr[2] = 3.0
+  float_ptr[unsafe_offset=2] = 3.0
   for offset in range(6):
-    print(float_ptr[offset], end=", ")
+    print(float_ptr[unsafe_offset=offset], end=", ")
+  # Forgetting this line is now a compile-time error, not a silent leak.
+  dealloc(allocation^)
 
 def main():
   var ptr: OwnedPointer[Int] = OwnedPointer(100)
@@ -77,8 +85,8 @@ def main():
   print(ptr[]) # access an initialized value
 
   # Demonstrating SharedDict
-  thing1 = SharedDict()
-  thing2 = thing1
+  var thing1 = SharedDict()
+  var thing2 = thing1
   thing1["Flip"] = "Flop"
   print(thing2["Flip"])
 

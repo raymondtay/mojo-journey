@@ -37,13 +37,13 @@
 # producer-consumer cycle: load ⇒ barrier ⇒ compute ⇒ barrier ⇒ repeat. Removing
 # either barrier would break this algorithm's correctness.
 #
-from math import ceildiv
-from sys import exit, has_accelerator
+from std.math import ceildiv
+from std.sys import exit, has_accelerator
 
-from gpu.sync import barrier
-from gpu.host import DeviceContext
-from gpu import thread_idx, block_idx
-from gpu.memory import AddressSpace
+from max.gpu.sync import barrier
+from max.gpu.host import DeviceContext
+from max.gpu import thread_idx, block_idx
+from max.gpu.memory import AddressSpace
 
 # Layout tensort support from open source layout package
 from layout import Layout, LayoutTensor
@@ -78,7 +78,7 @@ comptime matrix_c_layout = Layout.row_major(MATRIX_M, MATRIX_N) # A: M x N
 comptime tile_a_layout = Layout.row_major(TILE_M, TILE_K)
 comptime tile_b_layout = Layout.row_major(TILE_K, TILE_N)
 
-fn tiled_matmul_kernel(
+def tiled_matmul_kernel(
     matrix_a: LayoutTensor[float_dtype, matrix_a_layout, MutAnyOrigin],
     matrix_b: LayoutTensor[float_dtype, matrix_b_layout, MutAnyOrigin],
     matrix_c: LayoutTensor[float_dtype, matrix_c_layout, MutAnyOrigin],
@@ -90,8 +90,10 @@ fn tiled_matmul_kernel(
   var block_y = block_idx.y
 
   # global matrix coordinates
-  var global_row = block_y * TILE_M + thread_y
-  var global_col = block_x * TILE_N + thread_x
+  var tile_row_start = block_y * TILE_M
+  var tile_col_start = block_x * TILE_N
+  var global_row = tile_row_start + thread_y
+  var global_col = tile_col_start + thread_x
 
   # Allocate shared memory tiles for fast on-chip access
   var tile_a_shared = LayoutTensor[
@@ -111,13 +113,13 @@ fn tiled_matmul_kernel(
   # initialize accumulator and start tiling loop
   var accumulator : matrix_c.element_type = 0.0
 
-  # Iterate through tiles along K dimension; use @parameter to unroll the loop
-  # at compile time.
-  @parameter
-  for k_tile in range(0, MATRIX_K, TILE_K):
+  # Iterate through tiles along K dimension; `comptime for` (formerly
+  # `@parameter for`) unrolls the loop at compile time.
+  # Mojo 1.2: thread_idx/block_idx components are `Int`, so no `UInt(...)` casts.
+  comptime for k_tile in range(0, MATRIX_K, TILE_K):
     var a_global_row = tile_row_start + thread_y
-    var a_global_col = UInt(k_tile) + thread_x
-    var b_global_row = UInt(k_tile) + thread_y
+    var a_global_col = k_tile + thread_x
+    var b_global_row = k_tile + thread_y
     var b_global_col = tile_col_start + thread_x
 
     # Bounds checking
@@ -140,11 +142,10 @@ fn tiled_matmul_kernel(
     # Ensure all threads finish loading files before any thread starts computing
     barrier()
 
-    @parameter
-    for k in range(TILE_K):
+    comptime for k in range(TILE_K):
       var element_from_a = tile_a_shared[thread_y, k]
       var element_from_b = tile_b_shared[k, thread_x]
-      accumulator += a_element * b_element
+      accumulator += element_from_a * element_from_b
 
     # Ensure all threads finish computing in tile before any thread loads next
     # tiles

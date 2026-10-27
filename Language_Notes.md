@@ -27,7 +27,7 @@ Kernel Functions
 A typical kernel (executes in the GPU) function...
 
 ```mojo
-fn print_threads():
+def print_threads():
   """Print thread ids."""
   print("Block_index: [",
         block_idx.x,

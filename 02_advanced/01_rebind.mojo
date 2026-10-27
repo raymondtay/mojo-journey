@@ -15,17 +15,15 @@
 # compile-time assert that the input and result types resolve to the same type
 # after function instantiation.
 #
-fn take_simd8(x: SIMD[DType.float32, 8]):
+def take_simd8(x: SIMD[DType.float32, 8]):
     pass
 
 # DOES NOT COMPILE
-# fn generic_simd[nelts: Int](x: SIMD[DType.float32, nelts]):
-#     @parameter
-#     if nelts == 8:
+# def generic_simd[nelts: Int](x: SIMD[DType.float32, nelts]):
+#     comptime if nelts == 8:
 #         take_simd8(x)
 
-fn generic_simd2[nelts: Int](x: SIMD[DType.float32, nelts]):
-    @parameter
-    if nelts == 8:
+def generic_simd2[nelts: Int](x: SIMD[DType.float32, nelts]):
+    comptime if nelts == 8:
         take_simd8(rebind[SIMD[DType.float32, 8]](x)) # rebind !!!
 

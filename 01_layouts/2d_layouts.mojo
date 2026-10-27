@@ -1,7 +1,7 @@
 from layout import Layout, IntTuple, print_layout
 
 
-fn col_major():
+def col_major():
     """Column-major representation.
      ((2, 4):(1, 2))
            0   1   2   3
@@ -22,7 +22,7 @@ fn col_major():
     print_layout(dlayout)
 
 
-fn row_major():
+def row_major():
     """Row-major representation.
      ((2, 4):(4, 1))
          0   1   2   3

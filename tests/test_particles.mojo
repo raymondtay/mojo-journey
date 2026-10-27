@@ -1,7 +1,7 @@
-from testing import assert_equal, assert_true
+from std.testing import assert_equal, assert_true, TestSuite
 
 @fieldwise_init
-struct Particle(Copyable, ImplicitlyCopyable):
+struct Particle(ImplicitlyCopyable):
     var x: Float32
     var y: Float32
     var z: Float32
@@ -9,16 +9,8 @@ struct Particle(Copyable, ImplicitlyCopyable):
     var vy: Float32
     var vz: Float32
 
-    fn __copyinit__(out self, existing: Self):
-        self.x = existing.x.copy()
-        self.y = existing.y.copy()
-        self.z = existing.z.copy()
-        self.vx = existing.vx.copy()
-        self.vy = existing.vy.copy()
-        self.vz = existing.vz.copy()
 
-
-struct ParticlesSoA(Copyable, ImplicitlyCopyable):
+struct ParticlesSoA(Copyable):
     var x: List[Float32]
     var y: List[Float32]
     var z: List[Float32]
@@ -26,7 +18,7 @@ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
     var vy: List[Float32]
     var vz: List[Float32]
 
-    fn __init__(out self, n: Int):
+    def __init__(out self, n: Int):
         self.x = List[Float32](fill=0, length=n)
         self.y = List[Float32](fill=0, length=n)
         self.z = List[Float32](fill=0, length=n)
@@ -34,16 +26,19 @@ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
         self.vy = List[Float32](fill=0, length=n)
         self.vz = List[Float32](fill=0, length=n)
 
-    fn __copyinit__(out self, existing: Self):
-        self.x = existing.x.copy()
-        self.y = existing.y.copy()
-        self.z = existing.z.copy()
-        self.vx = existing.vx.copy()
-        self.vy = existing.vy.copy()
-        self.vz = existing.vz.copy()
+    def __init__(out self, *, copy: Self):
+        self.x = copy.x.copy()
+        self.y = copy.y.copy()
+        self.z = copy.z.copy()
+        self.vx = copy.vx.copy()
+        self.vy = copy.vy.copy()
+        self.vz = copy.vz.copy()
 
 
-fn update_positions_aos(var particles: List[Particle], dt: Float32):
+# `mut` so the tests can observe the in-place update (with `var`, Mojo 1.2
+# would require an explicit `.copy()`/`^` at each call site and the caller's
+# list would never change).
+def update_positions_aos(mut particles: List[Particle], dt: Float32):
     var n = len(particles)
     for i in range(n):
         var p = particles[i]
@@ -53,7 +48,7 @@ fn update_positions_aos(var particles: List[Particle], dt: Float32):
         particles[i] = p
 
 
-fn update_positions_soa(mut p: ParticlesSoA, dt: Float32):
+def update_positions_soa(mut p: ParticlesSoA, dt: Float32):
     var n = len(p.x)
     for i in range(n):
         p.x[i] += p.vx[i] * dt
@@ -61,14 +56,14 @@ fn update_positions_soa(mut p: ParticlesSoA, dt: Float32):
         p.z[i] += p.vz[i] * dt
 
 
-fn approx_eq(a: Float32, b: Float32, tol: Float32 = 1e-5) -> Bool:
+def approx_eq(a: Float32, b: Float32, tol: Float32 = 1e-5) -> Bool:
     var diff = a - b
     if diff < 0:
         diff = -diff
     return diff < tol
 
 
-def test_update_positions_aos():
+def test_update_positions_aos() raises:
     var particles = List[Particle]()
     particles.append(Particle(x=1.0, y=2.0, z=3.0, vx=10.0, vy=20.0, vz=30.0))
     particles.append(Particle(x=0.0, y=0.0, z=0.0, vx=1.0, vy=2.0, vz=3.0))
@@ -86,7 +81,7 @@ def test_update_positions_aos():
     assert_true(approx_eq(particles[1].z, 3.0))
 
 
-def test_update_positions_aos_fractional_dt():
+def test_update_positions_aos_fractional_dt() raises:
     var particles = List[Particle]()
     particles.append(Particle(x=0.0, y=0.0, z=0.0, vx=10.0, vy=20.0, vz=30.0))
 
@@ -97,7 +92,7 @@ def test_update_positions_aos_fractional_dt():
     assert_true(approx_eq(particles[0].z, 15.0))
 
 
-def test_update_positions_soa():
+def test_update_positions_soa() raises:
     var soa = ParticlesSoA(2)
     soa.x[0] = 1.0; soa.y[0] = 2.0; soa.z[0] = 3.0
     soa.vx[0] = 10.0; soa.vy[0] = 20.0; soa.vz[0] = 30.0
@@ -114,7 +109,7 @@ def test_update_positions_soa():
     assert_true(approx_eq(soa.z[1], 3.0))
 
 
-def test_update_positions_soa_fractional_dt():
+def test_update_positions_soa_fractional_dt() raises:
     var soa = ParticlesSoA(1)
     soa.x[0] = 0.0; soa.y[0] = 0.0; soa.z[0] = 0.0
     soa.vx[0] = 10.0; soa.vy[0] = 20.0; soa.vz[0] = 30.0
@@ -126,7 +121,7 @@ def test_update_positions_soa_fractional_dt():
     assert_true(approx_eq(soa.z[0], 15.0))
 
 
-def test_aos_soa_consistency():
+def test_aos_soa_consistency() raises:
     """Both layouts should produce the same results for identical input."""
     var n = 4
     var dt = Float32(0.1)
@@ -148,7 +143,7 @@ def test_aos_soa_consistency():
         assert_true(approx_eq(aos[i].z, soa.z[i]))
 
 
-def test_update_empty_particles():
+def test_update_empty_particles() raises:
     """Updating an empty particle list should not error."""
     var particles = List[Particle]()
     update_positions_aos(particles, Float32(1.0))
@@ -157,3 +152,8 @@ def test_update_empty_particles():
     var soa = ParticlesSoA(0)
     update_positions_soa(soa, Float32(1.0))
     assert_equal(len(soa.x), 0)
+
+
+# Mojo 1.2: test files are plain programs; discover and run every `test_*`.
+def main() raises:
+    TestSuite.discover_tests[__functions_in_module()]().run()

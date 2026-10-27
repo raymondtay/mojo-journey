@@ -16,39 +16,41 @@
 # In cell-3, write the file into our project directory
 # %%writefile mojo_project/loop_lowering.mojo
 
-from memory import UnsafePointer
-from sys import align_of
-from builtin.simd import SIMD
-from compile import compile_info
+from std.memory import MutPointer
+from std.sys import align_of
+from std.compile import compile_info
 
-fn saxpy16(
-    y: UnsafePointer[mut=True, Scalar[DType.float32]],
-    x: UnsafePointer[mut=True, Scalar[DType.float32]],
+# Mojo 1.2: `UnsafePointer` is deprecated in favour of `Pointer`
+# (`MutPointer` = mutable `Pointer`), whose unsafe operations are spelled
+# `unsafe_offset` / `unsafe_load` / `unsafe_store`. `SIMD` is in the prelude.
+def saxpy16(
+    y: MutPointer[Scalar[DType.float32], MutAnyOrigin],
+    x: MutPointer[Scalar[DType.float32], MutAnyOrigin],
     n: Int,
     a: Float32,
 ):
     comptime W = 16
-    va = SIMD[DType.float32, W](a)
+    var va = SIMD[DType.float32, W](a)
 
     # Alignment for vector load/store (safe choice for 16x f32)
     comptime ALIGN = align_of[SIMD[DType.float32, W]]()
 
     var i: Int = 0
     while i + W <= n:
-      vx = (x + i).load[width=W, alignment=ALIGN]()
-      vy = (y + i).load[width=W, alignment=ALIGN]()
-      (y + i).store[width=W, alignment=ALIGN](va * vx + vy)
+      var vx = x.unsafe_offset(i).unsafe_load[width=W, alignment=ALIGN]()
+      var vy = y.unsafe_offset(i).unsafe_load[width=W, alignment=ALIGN]()
+      y.unsafe_store[width=W, alignment=ALIGN](i, va * vx + vy)
       i += W
 
     # Scalar tail
     while i < n:
-      xi = (x + i).load[width=1]()
-      yi = (y + i).load[width=1]()
-      (y + i).store[width=1](a * xi + yi)
+      var xi = x.unsafe_offset(i).unsafe_load[width=1]()
+      var yi = y.unsafe_offset(i).unsafe_load[width=1]()
+      y.unsafe_store[width=1](i, a * xi + yi)
       i += 1
 
-fn main():
-    info = compile_info[saxpy16]()
+def main():
+    var info = compile_info[saxpy16]()
     print(info)
 
 # In cell-4, let's run it:

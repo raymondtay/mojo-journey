@@ -1,9 +1,12 @@
-from sys import exit, has_accelerator, has_apple_gpu_accelerator
+# Mojo 1.2: `has_apple_gpu_accelerator()` was removed from `std.sys`; ask the
+# accelerator target instead via `default_accelerator().is_apple_gpu()`.
+# GPU APIs moved from `gpu` to `max.gpu` (shipped with the `max` package).
+from std.sys import exit, has_accelerator, default_accelerator
 
-from gpu.host import DeviceContext
-from gpu import block_dim, block_idx, global_idx, grid_dim, thread_idx
+from max.gpu.host import DeviceContext
+from max.gpu import block_dim, block_idx, global_idx, grid_dim, thread_idx
 
-fn print_threads():
+def print_threads():
   """Print thread block and thread indices."""
   print(
       "block_idx: [",
@@ -25,23 +28,22 @@ fn print_threads():
       "]",
       )
 
-def main():
-  @parameter
-  if not has_accelerator():
+def main() raises:
+  comptime if not has_accelerator():
     print("No compatible GPU found")
-  elif has_apple_gpu_accelerator():
+  elif default_accelerator().is_apple_gpu():
     print(
         "Printing from a kernel is not currently supported on Apple silicon"
         " GPUs"
         )
   else:
-    ctx = DeviceContext()
+    var ctx = DeviceContext()
 
-    ctx.enqueue_function_experimental[print_threads](
+    ctx.enqueue_function[print_threads](
         grid_dim=(2, 2, 1),
         block_dim=(4, 4, 2)
     )
+    ctx.synchronize()
 
-  ctx.synchronize()
   print("Done")
 

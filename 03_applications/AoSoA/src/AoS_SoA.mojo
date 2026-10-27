@@ -1,7 +1,9 @@
-from time import perf_counter_ns
+from std.time import perf_counter_ns
 
 @fieldwise_init
-struct Particle(Copyable, ImplicitlyCopyable):
+# Mojo 1.2: `__copyinit__` is gone. A struct of trivially-copyable fields gets
+# its copy constructor synthesized, so `ImplicitlyCopyable` is all we need.
+struct Particle(ImplicitlyCopyable):
     var x: Float32
     var y: Float32
     var z: Float32
@@ -9,16 +11,10 @@ struct Particle(Copyable, ImplicitlyCopyable):
     var vy: Float32
     var vz: Float32
 
-    fn __copyinit__(out self, existing: Self):
-      self.x = existing.x.copy()
-      self.y = existing.y.copy()
-      self.z = existing.z.copy()
-      self.vx = existing.vx.copy()
-      self.vy = existing.vy.copy()
-      self.vz = existing.vz.copy()
 
-
-struct ParticlesSoA(Copyable, ImplicitlyCopyable):
+# `List` is only explicitly `Copyable` (no hidden O(n) copies), so a struct of
+# Lists can't be `ImplicitlyCopyable`; callers copy it with `.copy()`.
+struct ParticlesSoA(Copyable):
     var x: List[Float32]
     var y: List[Float32]
     var z: List[Float32]
@@ -26,7 +22,7 @@ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
     var vy: List[Float32]
     var vz: List[Float32]
 
-    fn __init__(out self, n: Int):
+    def __init__(out self, n: Int):
         self.x = List[Float32](fill=0, length=n)
         self.y = List[Float32](fill=0, length=n)
         self.z = List[Float32](fill=0, length=n)
@@ -34,16 +30,16 @@ struct ParticlesSoA(Copyable, ImplicitlyCopyable):
         self.vy = List[Float32](fill=0, length=n)
         self.vz = List[Float32](fill=0, length=n)
 
-    fn __copyinit__(out self, existing: Self):
-      self.x = existing.x.copy()
-      self.y = existing.y.copy()
-      self.z = existing.z.copy()
-      self.vx = existing.vx.copy()
-      self.vy = existing.vy.copy()
-      self.vz = existing.vz.copy()
+    def __init__(out self, *, copy: Self):
+      self.x = copy.x.copy()
+      self.y = copy.y.copy()
+      self.z = copy.z.copy()
+      self.vx = copy.vx.copy()
+      self.vy = copy.vy.copy()
+      self.vz = copy.vz.copy()
 
 # Array-of-Structures: contiguous particles[]
-fn update_positions_aos(var particles: List[Particle], dt: Float32):
+def update_positions_aos(var particles: List[Particle], dt: Float32):
     var n = len(particles)
     for i in range(n):
         # Load one particle (brings x,y,z,vx,vy,vz into cache)
@@ -53,14 +49,14 @@ fn update_positions_aos(var particles: List[Particle], dt: Float32):
         p.z += p.vz * dt
         particles[i] = p
 
-fn update_positions_soa(mut p: ParticlesSoA, dt: Float32):
+def update_positions_soa(mut p: ParticlesSoA, dt: Float32):
     var n = len(p.x)
     for i in range(n):
         p.x[i] += p.vx[i] * dt
         p.y[i] += p.vy[i] * dt
         p.z[i] += p.vz[i] * dt
 
-fn bench_aos(particles: List[Particle], dt: Float32, iters: Int = 5) -> Float64:
+def bench_aos(particles: List[Particle], dt: Float32, iters: Int = 5) -> Float64:
   var best_time = 1e9
   for _ in range(iters):
     var start = perf_counter_ns()
@@ -71,7 +67,7 @@ fn bench_aos(particles: List[Particle], dt: Float32, iters: Int = 5) -> Float64:
       best_time = elapsed
   return best_time
 
-fn bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) -> Float64:
+def bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) -> Float64:
   var best_time = 1e9
   for _ in range(iters):
     var start = perf_counter_ns()
@@ -83,7 +79,7 @@ fn bench_soa(mut p: ParticlesSoA, dt: Float32, iters: Int = 5) -> Float64:
   return best_time
 
 
-fn benchmark(n: Int = 10_000_000):
+def benchmark(n: Int = 10_000_000):
     var aos = List[Particle]()
     aos.reserve(n)
     for i in range(n):
@@ -104,7 +100,7 @@ fn benchmark(n: Int = 10_000_000):
 
     var dt: Float32 = 0.01
 
-    var t_aos = bench_aos(aos^, dt)
+    var t_aos = bench_aos(aos, dt)
     var t_soa = bench_soa(soa, dt)
 
     print("AoS: ", t_aos, " ms")

@@ -1,3 +1,4 @@
+from std.memory import alloc, dealloc, Allocation, Layout, unsafe_destroy_n
 #
 # To support Mojo's work in AI, Mojo aims to provide powerful, easy-to-use
 # metaprogramming with zero runtime cost. This compile-time metaprogramming uses
@@ -20,7 +21,7 @@
 #     values: SIMD[dtype, width],
 #     /,
 #     # positional-or-keyword parameter
-#     compare: fn (Scalar[dtype], Scalar[dtype]) -> Int,
+#     compare: def (Scalar[dtype], Scalar[dtype]) -> Int,
 #     *,
 #     # keyword-only parameter
 #     reverse: Bool = False,
@@ -42,73 +43,76 @@
 # - An equals sign (=) introduces a default value for an optional parameter.
 
 # 1. Parameterized functions
-fn repeat[MsgType: Stringable, //, count : Int](msg: MsgType):
-  @parameter
-  for _ in range(count):
+def repeat[MsgType: Writable, //, count : Int](msg: MsgType):
+  comptime for _ in range(count):
     print(String(msg))
 
 # 2. Parameterized structs
-struct GenericArray[ElementType: Copyable & Movable & ImplicitlyDestructible]:
-  var data: UnsafePointer[Self.ElementType, MutExternalOrigin]
+# Mojo 1.2: `Copyable` already implies `Movable`; `ImplicitlyDestructible` is
+# now spelled `Deinitable`. Heap storage is an `Allocation` (from `alloc(Layout)`)
+# that the compiler forces us to release with `dealloc`.
+struct GenericArray[ElementType: Copyable & Deinitable]:
+  var data: Allocation[Self.ElementType]
   var size: Int
   
-  fn __init__(out self, var *elements: Self.ElementType):
+  def __init__(out self, var *elements: Self.ElementType):
     self.size = len(elements)
-    self.data = alloc[Self.ElementType](self.size)
+    self.data = alloc(Layout[Self.ElementType](count=self.size))
+    var ptr = self.data.unsafe_ptr()
     for i in range(self.size):
-      (self.data + i).init_pointee_move(elements[i].copy())
+      ptr.unsafe_offset(i).unsafe_write(copy=elements[i])
 
-  fn __del__(deinit self):
-    for i in range(self.size):
-      (self.data + i).destroy_pointee()
-    self.data.free()
+  def __deinit__(deinit self):
+    unsafe_destroy_n(self.data.unsafe_ptr(), self.size)
+    dealloc(self.data^)
 
-  fn __getitem__(self, i: Int) raises -> ref[self] Self.ElementType:
+  # The returned reference borrows from the allocation (same origin as `unsafe_ptr()`).
+  def __getitem__(self, i: Int) raises -> ref[self.data._alloc] Self.ElementType:
     if i < self.size:
-      return self.data[i]
+      return self.data.unsafe_ptr()[unsafe_offset=i]
     else:
       raise Error("array out-of-bounds, trying to reference index: {}".format(i))
 
   @staticmethod
-  fn splat(count: Int, value: Self.ElementType) -> Self:
+  def splat(count: Int, value: Self.ElementType) -> Self:
     return GenericArray[Self.ElementType](value.copy())
 
 
 @fieldwise_init
-struct Container[ElementType: Movable & ImplicitlyDestructible]:
+struct Container[ElementType: Movable & Deinitable]:
   var element: Self.ElementType
 
-  def __str__[
-      StrElementType: Writable & Movable, //
-      ](self: Container[StrElementType]) -> String:
-    return String("Container[{}]".format(String(self.element)))
+  # Mojo 1.2: a method can no longer re-declare `self` as a narrower type
+  # (`self: Container[StrElementType]`); constrain `Self` with a `where` clause.
+  def __str__(self) -> String where conforms_to(Self.ElementType, Writable):
+    return String("Container[{}]".format(self.element))
 
 # 3. Inference failures - YES It CAN HAPPEN ☺
-struct One[tpe: Writable & Copyable & Movable]:
+struct One[tpe: Writable & Copyable & Deinitable]:
   var value: Self.tpe
 
-  fn __init__(out self, value: Self.tpe):
+  def __init__(out self, value: Self.tpe):
     self.value = value.copy()
 
 def use_one():
-  s1 = One("456")
-  s2 = One(123)
+  var s1 = One("456")
+  var s2 = One(123)
 
-struct Two[tpe: Writable & Copyable & Movable]:
+struct Two[tpe: Writable & Copyable & Deinitable]:
   var val1: Self.tpe
   var val2: Self.tpe
 
-  fn __init__(out self, val1: One[Self.tpe], val2: One[Self.tpe]):
+  def __init__(out self, val1: One[Self.tpe], val2: One[Self.tpe]):
     self.val1 = val1.value.copy()
     self.val2 = val2.value.copy()
     print(String(self.val1), String(self.val2))
 
   @staticmethod
-  fn fire(thing1: One[Self.tpe], thing2: One[Self.tpe]):
+  def fire(thing1: One[Self.tpe], thing2: One[Self.tpe]):
     print("🔥!!!!", String(thing1.value), String(thing2.value))
 
 def use_two():
-  s3 = Two(One("Infer"), One("me"))
+  var s3 = Two(One("Infer"), One("me"))
   Two.fire(One(1), One(2))
   # Two.fire(One("Mixed"), One(0))
 
@@ -118,30 +122,30 @@ def use_two():
 # parameters. Because the signature is processed left-to-right, a parameter can
 # only depend on a parameter earlier in the parameter list.
 
-fn dependent_type[dtype: DType, value: Scalar[dtype]]():
+def dependent_type[dtype: DType, value: Scalar[dtype]]():
   print("Value: " , value)
   print("Value is floating-point: ", dtype.is_floating_point())
 
-fn dependent_type2[dtype: DType, //, value: Scalar[dtype]]():
+def dependent_type2[dtype: DType, //, value: Scalar[dtype]]():
   print("Value: " , value)
   print("Value is floating-point: ", dtype.is_floating_point())
 
 
 
-def main():
+def main() raises:
   repeat[3]("Hello world!")
 
-  gen_arr = GenericArray[Int](1,2,3,4,5)
+  var gen_arr = GenericArray[Int](1,2,3,4,5)
   for i in range(gen_arr.size):
-    end = ", " if i < gen_arr.size - 1 else "\n"
+    var end = ", " if i < gen_arr.size - 1 else "\n"
     print(gen_arr[i], end=end)
 
   # print(gen_arr[6]) # error!!!
 
   _ = GenericArray[Float64].splat(8, 0) # i don't know what to do with this yet ...
 
-  float_container = Container(3.142)
-  string_container = Container("Hello World")
+  var float_container = Container(3.142)
+  var string_container = Container("Hello World")
   print(float_container.__str__())
   print(string_container.__str__())
 

@@ -10,15 +10,16 @@ Below is an example of the configuration `pixi.toml`
 ```pre
 [workspace]
 channels = [
-  "https://conda.modular.com/max-nightly",
+  "https://conda.modular.com/max",
   "conda-forge",
   "https://repo.prefix.dev/modular-community",
 ]
 
 [dependencies]
-mojo = ">=0.26.1.0.dev2025120605,<0.27"
+mojo = "1.2.*"
+# GPU APIs (`max.gpu`) and `layout` ship with MAX, not with `mojo` itself.
+max = "26.7.*"
 numpy = ">=2.3.5,<3"
-emberjson = ">=0.2.1,<0.3"
 ```
 
 Updating Pixi

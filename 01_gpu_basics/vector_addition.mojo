@@ -1,14 +1,14 @@
-from gpu.host import DeviceContext
-from gpu import block_dim, block_idx, thread_idx
-from sys import has_accelerator, has_apple_gpu_accelerator
+from max.gpu.host import DeviceContext
+from max.gpu import block_dim, block_idx, thread_idx
+from std.sys import has_accelerator, default_accelerator
 from layout import Layout, LayoutTensor
-from math import ceildiv
+from std.math import ceildiv
 
-alias block_size = 256
-alias num_blocks = ceildiv(vector_size, block_size)
+comptime block_size = 256
+comptime num_blocks = ceildiv(vector_size, block_size)
 
 
-fn vector_addition(
+def vector_addition(
     lhs_tensor: LayoutTensor[float_dtype, layout, MutAnyOrigin],
     rhs_tensor: LayoutTensor[float_dtype, layout, MutAnyOrigin],
     out_tensor: LayoutTensor[float_dtype, layout, MutAnyOrigin],
@@ -27,7 +27,7 @@ fn vector_addition(
         out_tensor[tid] = lhs_tensor[tid] + rhs_tensor[tid]
 
 
-fn print_threads():
+def print_threads():
     """Print thread ids."""
     print(
         "Block_index: [",
@@ -44,7 +44,7 @@ fn print_threads():
 
 # Mojo requires a compatible GPU development environment to compile kernel
 # functions, otherwise it raises a compile time error. In the code, i'm using
-# the @parameter decorator to evluate the has_accelerator() function at compile
+# `comptime if` (formerly `@parameter if`) to evaluate has_accelerator() at compile
 # time and compile only the corresponding branch of the if-statement. As a
 # result, it you don't have a compatibleGPU development environment, you'll
 # likely see the following message when you run program:
@@ -58,12 +58,12 @@ fn print_threads():
 
 
 # Vector data type and size
-alias float_dtype = DType.float32
-alias vector_size = 100000
-alias layout = Layout.row_major(vector_size)
+comptime float_dtype = DType.float32
+comptime vector_size = 100000
+comptime layout = Layout.row_major(vector_size)
 
 
-def create_host_memory_device_memory_n_execute(ctx: DeviceContext):
+def create_host_memory_device_memory_n_execute(ctx: DeviceContext) raises:
     """A sample run on Apple Silicon GPUs.
 
     > pixi run mojo vector_addition.mojo
@@ -75,34 +75,35 @@ def create_host_memory_device_memory_n_execute(ctx: DeviceContext):
     as it would cleaned up by Mojo.
     """
 
-    lhs_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](vector_size)
-    rhs_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](vector_size)
+    var lhs_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](vector_size)
+    var rhs_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](vector_size)
     ctx.synchronize()
-    weight_factor = 0.5  # For demonstration purposes only.
+    var weight_factor = 0.5  # For demonstration purposes only.
 
     # initialize the input vectors
     for i in range(vector_size):
         lhs_host_buffer[i] = Float32(i)
-        rhs_host_buffer[i] = Float32(i * weight_factor)
+        # Mojo 1.2: Int * Float64 no longer converts implicitly.
+        rhs_host_buffer[i] = Float32(Float64(i) * weight_factor)
     print("LHS host buffer: ", lhs_host_buffer)
     print("RHS host buffer: ", rhs_host_buffer)
 
-    lhs_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
-    rhs_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
+    var lhs_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
+    var rhs_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
 
     ctx.enqueue_copy(dst_buf=lhs_device_buffer, src_buf=lhs_host_buffer)
     ctx.enqueue_copy(dst_buf=rhs_device_buffer, src_buf=rhs_host_buffer)
-    result_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
+    var result_device_buffer = ctx.enqueue_create_buffer[float_dtype](vector_size)
     print("LHS device buffer: ", lhs_device_buffer)
     print("RHS device buffer: ", rhs_device_buffer)
 
     # Wrap the DeviceBuffers in LayoutTensors
-    lhs_tensor = LayoutTensor[float_dtype, layout](lhs_device_buffer)
-    rhs_tensor = LayoutTensor[float_dtype, layout](rhs_device_buffer)
-    result_tensor = LayoutTensor[float_dtype, layout](result_device_buffer)
+    var lhs_tensor = LayoutTensor[float_dtype, layout](lhs_device_buffer)
+    var rhs_tensor = LayoutTensor[float_dtype, layout](rhs_device_buffer)
+    var result_tensor = LayoutTensor[float_dtype, layout](result_device_buffer)
 
     # Compile and enqueue the kernel
-    ctx.enqueue_function_checked[vector_addition, vector_addition](
+    ctx.enqueue_function[vector_addition](
         lhs_tensor,
         rhs_tensor,
         result_tensor,
@@ -110,7 +111,7 @@ def create_host_memory_device_memory_n_execute(ctx: DeviceContext):
         block_dim=block_size,
     )
     # Create a HostBuffer for the result vector
-    result_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](
+    var result_host_buffer = ctx.enqueue_create_host_buffer[float_dtype](
         vector_size
     )
     # Copy the result vector from the DeviceBuffer to the HostBuffer
@@ -120,23 +121,22 @@ def create_host_memory_device_memory_n_execute(ctx: DeviceContext):
     print("Result vector: ", result_host_buffer)
 
 
-def main():
-    @parameter
-    if not has_accelerator():
+def main() raises:
+    comptime if not has_accelerator():
         print("No compatible GPU found!")
-    elif has_apple_gpu_accelerator():
+    elif default_accelerator().is_apple_gpu():
         print(
             "Printing from a kernel is not currently support on Apple Silicon"
             " GPUs"
         )
-        ctx = DeviceContext()
+        var ctx = DeviceContext()
         create_host_memory_device_memory_n_execute(ctx)
     else:
-        ctx = DeviceContext()
+        var ctx = DeviceContext()
         # Invoking the compiled kernel function with grid_dim=2 and block_dim=64
         # which means that we are using a grid of 2 thread blocks with 64 threads
         # each per block, totalling 128 threads in the grid
-        ctx.enqueue_function_checked[print_threads, print_threads](
+        ctx.enqueue_function[print_threads](
             grid_dim=(2, 2, 1), block_dim=(16, 4, 2)
         )
         ctx.synchronize()

@@ -39,7 +39,7 @@ struct Particle(Copyable, ImplicitlyCopyable):
     var vz: Float32
 
 # Array-of-Structures: contiguous particles[]
-fn update_positions_aos(var particles: List[Particle], dt: Float32):
+def update_positions_aos(var particles: List[Particle], dt: Float32):
     var n = len(particles)
     for i in range(n):
         # Load one particle (brings x,y,z,vx,vy,vz into cache)
@@ -62,7 +62,7 @@ The takeaways are:
 Now, we examine how it looks like in SoA form:
 
 ```mojo
-struct ParticlesSoA(Copyable,ImplicitlyCopyable):
+struct ParticlesSoA(Copyable):
     var x: List[Float32]
     var y: List[Float32]
     var z: List[Float32]
@@ -70,7 +70,7 @@ struct ParticlesSoA(Copyable,ImplicitlyCopyable):
     var vy: List[Float32]
     var vz: List[Float32]
 
-    fn __init__(out self, n: Int):
+    def __init__(out self, n: Int):
         self.x = List[Float32](fill=0, length=n)
         self.y = List[Float32](fill=0, length=n)
         self.z = List[Float32](fill=0, length=n)
@@ -78,8 +78,8 @@ struct ParticlesSoA(Copyable,ImplicitlyCopyable):
         self.vy = List[Float32](fill=0, length=n)
         self.vz = List[Float32](fill=0, length=n)
 
-fn update_positions_soa(mut p: ParticlesSoA, dt: Float32):
-    let n = len(p.x)
+def update_positions_soa(mut p: ParticlesSoA, dt: Float32):
+    var n = len(p.x)
     for i in range(n):
         p.x[i] += p.vx[i] * dt
         p.y[i] += p.vy[i] * dt

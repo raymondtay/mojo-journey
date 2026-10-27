@@ -1,7 +1,7 @@
 [workspace]
 authors = ["Raymond Tay <raymondtay1974@gmail.com>"]
 channels = [
-  "https://conda.modular.com/max-nightly",
+  "https://conda.modular.com/max",
   "conda-forge",
   "https://repo.prefix.dev/modular-community",
 ]
@@ -12,7 +12,8 @@ version = "0.1.0"
 [tasks]
 
 [dependencies]
-mojo = ">=1.2"
+mojo = "1.2.*"
+max = "26.7.*"  # provides max.gpu (GPU APIs) and the layout package
 numpy = ">=2.3.5,<3"
 emberjson = ">=0.3.0"
 numba = ">=0.63.1,<0.64"
